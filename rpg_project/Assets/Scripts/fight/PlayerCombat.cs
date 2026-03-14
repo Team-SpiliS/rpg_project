@@ -9,13 +9,14 @@ public class PlayerCombat : MonoBehaviour
     public float attackRange = 1.5f;
     public float meleeCooldown = 0.5f;
     public float comboResetTime = 1.0f;
+    public float meleeDamageDelay = 0.3f;
     public Transform attackPoint;
 
     [Header("Магическая атака (ПКМ)")]
     public GameObject magicPrefab;
     public int magicDamage = 30;
     public float magicCooldown = 2f;
-    [Tooltip("Задержка перед вылетом шара (для синхронизации с анимацией)")]
+    [Tooltip("Задержка перед вылетом шара")]
     public float magicSpawnDelay = 0.5f;
 
     private float nextMeleeTime = 0f;
@@ -40,11 +41,13 @@ public class PlayerCombat : MonoBehaviour
 
     private void HandleMeleeInput()
     {
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Magic")) return;
+
         if (Time.time - lastMeleeClickTime > comboResetTime) comboStep = 0;
 
         if (Mouse.current.leftButton.wasPressedThisFrame && Time.time >= nextMeleeTime)
         {
-            MeleeAttack();
+            StartCoroutine(MeleeAttack());
             lastMeleeClickTime = Time.time;
             nextMeleeTime = Time.time + meleeCooldown;
         }
@@ -52,6 +55,8 @@ public class PlayerCombat : MonoBehaviour
 
     private void HandleMagicInput()
     {
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Attack1") ||
+        animator.GetCurrentAnimatorStateInfo(0).IsName("Attack2")) return;
         if (Mouse.current.rightButton.wasPressedThisFrame && Time.time >= nextMagicTime)
         {
             StartCoroutine(MagicAttackRoutine());
@@ -59,7 +64,7 @@ public class PlayerCombat : MonoBehaviour
         }
     }
 
-    private void MeleeAttack()
+    private IEnumerator MeleeAttack()
     {
         if (comboStep == 0)
         {
@@ -71,6 +76,8 @@ public class PlayerCombat : MonoBehaviour
             animator.SetTrigger("Attack2");
             comboStep = 0;
         }
+
+        yield return new WaitForSeconds(meleeDamageDelay);
 
         Vector3 hitPosition = attackPoint != null ? attackPoint.position : transform.position + transform.forward * 1f;
         Collider[] hitEnemies = Physics.OverlapSphere(hitPosition, attackRange);
@@ -94,6 +101,12 @@ public class PlayerCombat : MonoBehaviour
         if (magicPrefab != null && attackPoint != null)
         {
             Instantiate(magicPrefab, attackPoint.position, transform.rotation);
+            GameObject proj = Instantiate(magicPrefab, attackPoint.position, transform.rotation);
+
+            if (proj.TryGetComponent(out MagicProjectile magic))
+            {
+                magic.Setup(magicDamage, "Player");
+            }
         }
     }
 
@@ -102,5 +115,13 @@ public class PlayerCombat : MonoBehaviour
         if (attackPoint == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    }
+
+    public float GetMagicCooldownNormalized()
+    {
+        if (Time.time >= nextMagicTime) return 0f; 
+
+        float timeRemaining = nextMagicTime - Time.time;
+        return timeRemaining / magicCooldown;
     }
 }

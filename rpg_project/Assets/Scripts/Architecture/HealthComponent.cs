@@ -38,11 +38,6 @@ public class HealthComponent : MonoBehaviour, IDamageable
     {
         Debug.Log($"{gameObject.name} умер!");
         OnDeath?.Invoke();
-
-        if (!gameObject.CompareTag("Player"))
-        {
-            gameObject.SetActive(false);
-        }
     }
 
     public int GetCurrentHealth() => currentHealth;
