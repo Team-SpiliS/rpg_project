@@ -4,6 +4,7 @@ public class MagicProjectile : MonoBehaviour
 {
     public float speed = 15f;
     public int damage = 30; 
+    public float destroyTime = 3f;
     private string casterTag = "Untagged";
     private bool hasDealtDamage = false;
 
@@ -15,7 +16,7 @@ public class MagicProjectile : MonoBehaviour
 
     void Start()
     {
-        Destroy(gameObject, 3f);
+        Destroy(gameObject, destroyTime);
     }
 
     void Update()
