@@ -16,6 +16,12 @@ public class EnemyRanged : EnemyBase
 
     void Update()
     {
+        if (playerHealth != null && playerHealth.GetCurrentHealth() <= 0)
+        {
+            StopMoving();
+            return;
+        }
+
         if (!player) return;
         float dist = Vector3.Distance(transform.position, player.position);
 

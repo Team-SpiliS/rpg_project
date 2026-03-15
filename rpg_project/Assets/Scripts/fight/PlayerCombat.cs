@@ -23,6 +23,8 @@ public class PlayerCombat : MonoBehaviour
     private float nextMagicTime = 0f;
     private float lastMeleeClickTime = 0f;
     private int comboStep = 0;
+    private Coroutine currentAttackCoroutine;
+    private HealthComponent health;
 
     private Animator animator;
 
@@ -31,6 +33,21 @@ public class PlayerCombat : MonoBehaviour
     void Start()
     {
         animator = GetComponent<Animator>();
+
+        health = GetComponent<HealthComponent>();
+        if (health != null)
+        {
+            health.OnTakeDamage += InterruptAttack;
+        }
+    }
+
+    void InterruptAttack()
+    {
+        if (currentAttackCoroutine != null)
+        {
+            StopCoroutine(currentAttackCoroutine);
+            currentAttackCoroutine = null;
+        }
     }
 
     void Update()
@@ -47,7 +64,7 @@ public class PlayerCombat : MonoBehaviour
 
         if (Mouse.current.leftButton.wasPressedThisFrame && Time.time >= nextMeleeTime)
         {
-            StartCoroutine(MeleeAttack());
+            currentAttackCoroutine = StartCoroutine(MeleeAttack());
             lastMeleeClickTime = Time.time;
             nextMeleeTime = Time.time + meleeCooldown;
         }
@@ -57,9 +74,10 @@ public class PlayerCombat : MonoBehaviour
     {
         if (animator.GetCurrentAnimatorStateInfo(0).IsName("Attack1") ||
         animator.GetCurrentAnimatorStateInfo(0).IsName("Attack2")) return;
+
         if (Mouse.current.rightButton.wasPressedThisFrame && Time.time >= nextMagicTime)
         {
-            StartCoroutine(MagicAttackRoutine());
+            currentAttackCoroutine = StartCoroutine(MagicAttackRoutine());
             nextMagicTime = Time.time + magicCooldown;
         }
     }
@@ -90,6 +108,8 @@ public class PlayerCombat : MonoBehaviour
                 damageable.TakeDamage(physicalDamage, DamageType.Physical);
             }
         }
+
+        currentAttackCoroutine = null;
     }
 
     private IEnumerator MagicAttackRoutine()
@@ -100,7 +120,6 @@ public class PlayerCombat : MonoBehaviour
 
         if (magicPrefab != null && attackPoint != null)
         {
-            Instantiate(magicPrefab, attackPoint.position, transform.rotation);
             GameObject proj = Instantiate(magicPrefab, attackPoint.position, transform.rotation);
 
             if (proj.TryGetComponent(out MagicProjectile magic))
@@ -108,6 +127,8 @@ public class PlayerCombat : MonoBehaviour
                 magic.Setup(magicDamage, "Player");
             }
         }
+
+        currentAttackCoroutine = null;
     }
 
     private void OnDrawGizmosSelected()

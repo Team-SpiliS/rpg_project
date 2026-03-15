@@ -17,6 +17,11 @@ public class EnemyMelee : EnemyBase
 
     void Update()
     {
+        if (playerHealth != null && playerHealth.GetCurrentHealth() <= 0)
+        {
+            StopMoving(); 
+            return;
+        }
         if (!player || isAttacking) return;
         float dist = Vector3.Distance(transform.position, player.position);
 

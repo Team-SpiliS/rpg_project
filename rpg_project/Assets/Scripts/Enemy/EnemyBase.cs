@@ -24,4 +24,17 @@ public abstract class EnemyBase : MonoBehaviour
         dir.y = 0;
         if (dir != Vector3.zero) transform.rotation = Quaternion.LookRotation(dir);
     }
+
+    protected void StopMoving()
+    {
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.ResetPath(); 
+        }
+
+        if (animator != null)
+        {
+            animator.SetFloat("Speed", 0f); 
+        }
+    }
 }
