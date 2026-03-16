@@ -11,6 +11,9 @@ public class EnemyHealthUI : MonoBehaviour
     public float drainSpeed = 2f; 
     private HealthComponent health;
 
+    [Tooltip("Множитель скорости стекания ХП")]
+    [SerializeField] private float drainMultiplier = 0.5f;
+
     void Start()
     {
         health = GetComponent<HealthComponent>();
@@ -34,7 +37,7 @@ public class EnemyHealthUI : MonoBehaviour
     {
         if (drainSlider.value > mainSlider.value)
         {
-            drainSlider.value -= drainSpeed * Time.deltaTime * (drainSlider.maxValue * 0.5f);
+            drainSlider.value -= drainSpeed * Time.deltaTime * (drainSlider.maxValue * drainMultiplier);
         }
     }
 

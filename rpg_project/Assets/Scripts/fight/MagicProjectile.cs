@@ -26,6 +26,7 @@ public class MagicProjectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (hasDealtDamage) return;
         if (other.CompareTag(casterTag)) return;
 
         if (other.TryGetComponent(out IDamageable damageable))

@@ -3,8 +3,8 @@ using UnityEngine;
 public class EnemyRanged : EnemyBase
 {
     [Header("Дистанции боя")]
-    public float stopDistance = 8f;     
-    public float retreatDistance = 5f;  
+    public float stopDistance = 8f;
+    public float retreatDistance = 5f;
 
     [Header("Настройки магии")]
     public int magicDamage = 25;
@@ -16,13 +16,10 @@ public class EnemyRanged : EnemyBase
 
     void Update()
     {
-        if (playerHealth != null && playerHealth.GetCurrentHealth() <= 0)
-        {
-            StopMoving();
-            return;
-        }
+        if (isDead) return;
 
-        if (!player) return;
+        if (isPlayerDead || !player) return;
+
         float dist = Vector3.Distance(transform.position, player.position);
 
         if (dist <= detectionRange)
@@ -44,18 +41,18 @@ public class EnemyRanged : EnemyBase
         {
             Vector3 dirToPlayer = transform.position - player.position;
             Vector3 retreatPos = transform.position + dirToPlayer.normalized * 3f;
-            agent.SetDestination(retreatPos);
+            if (agent != null && agent.isOnNavMesh) agent.SetDestination(retreatPos);
         }
         else if (dist > stopDistance)
         {
-            agent.SetDestination(player.position);
+            if (agent != null && agent.isOnNavMesh) agent.SetDestination(player.position);
         }
         else
         {
-            agent.ResetPath();
+            if (agent != null && agent.isOnNavMesh) agent.ResetPath();
         }
 
-        if (animator) animator.SetFloat("Speed", agent.velocity.magnitude);
+        if (animator && agent != null) animator.SetFloat("Speed", agent.velocity.magnitude);
         LookAtPlayer();
     }
 
@@ -66,9 +63,7 @@ public class EnemyRanged : EnemyBase
         if (projectilePrefab && shootPoint)
         {
             GameObject proj = Instantiate(projectilePrefab, shootPoint.position, transform.rotation);
-
             Vector3 targetPoint = player.position + Vector3.up * 1.2f;
-
             proj.transform.LookAt(targetPoint);
 
             if (proj.TryGetComponent(out MagicProjectile magic))
