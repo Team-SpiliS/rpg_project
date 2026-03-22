@@ -131,12 +131,6 @@ public class PlayerCombat : MonoBehaviour
         currentAttackCoroutine = null;
     }
 
-    private void OnDrawGizmosSelected()
-    {
-        if (attackPoint == null) return;
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
-    }
 
     public float GetMagicCooldownNormalized()
     {
