@@ -74,6 +74,7 @@ public class UIController : MonoBehaviour
     public void RestartGame()
     {
         Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.Locked;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

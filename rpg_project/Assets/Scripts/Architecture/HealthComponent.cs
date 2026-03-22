@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class HealthComponent : MonoBehaviour, IDamageable
 {
-    [Header("Настройки здоровья")]
+    [Header("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")]
     [SerializeField] private int maxHealth = 100;
     private int currentHealth;
 
@@ -23,7 +23,7 @@ public class HealthComponent : MonoBehaviour, IDamageable
         currentHealth -= amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth); 
 
-        Debug.Log($"{gameObject.name} получил {amount} урона типа {type}. Текущее ХП: {currentHealth}");
+        Debug.Log($"{gameObject.name} пїЅпїЅпїЅпїЅпїЅпїЅпїЅ {amount} пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ {type}. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ: {currentHealth}");
 
         OnTakeDamage?.Invoke();
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
@@ -36,7 +36,7 @@ public class HealthComponent : MonoBehaviour, IDamageable
 
     private void Die()
     {
-        Debug.Log($"{gameObject.name} умер!");
+        Debug.Log($"{gameObject.name} пїЅпїЅпїЅпїЅ!");
         OnDeath?.Invoke();
     }
 

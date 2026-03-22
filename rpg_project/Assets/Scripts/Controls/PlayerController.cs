@@ -20,13 +20,15 @@ public class PlayerController : MonoBehaviour
     private Transform mainCamera;
     private Animator animator;
 
-    // Ввод
     private PlayerControls controls;
     private Vector2 moveInput;
+    
+    private bool isDead = false;
 
     void Awake()
     {
         controls = new PlayerControls();
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     private void OnEnable() => controls.Enable();
@@ -37,10 +39,23 @@ public class PlayerController : MonoBehaviour
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         if (Camera.main != null) mainCamera = Camera.main.transform;
+        
+        HealthComponent health = GetComponent<HealthComponent>();
+        if (health != null)
+        {
+            health.OnDeath += HandleDeath;
+        }
+    }
+
+    void HandleDeath()
+    {
+        isDead = true;
+        if (animator != null) animator.SetFloat("Speed", 0);
     }
 
     void Update()
     {
+        if (isDead) return;
         Move();
         ApplyGravity();
     }
@@ -82,5 +97,14 @@ public class PlayerController : MonoBehaviour
 
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+    }
+
+    void OnDestroy()
+    {
+        HealthComponent health = GetComponent<HealthComponent>();
+        if (health != null)
+        {
+            health.OnDeath -= HandleDeath;
+        }
     }
 }
