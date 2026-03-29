@@ -42,4 +42,15 @@ public class HealthComponent : MonoBehaviour, IDamageable
 
     public int GetCurrentHealth() => currentHealth;
     public int GetMaxHealth() => maxHealth;
+
+    public void LoadHealth(int health)
+    {
+        currentHealth = health;
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+
+        if (currentHealth <= 0)
+        {
+            OnDeath?.Invoke();
+        }
+    }
 }
