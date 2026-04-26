@@ -62,6 +62,14 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
+        PlayerCombat combat = GetComponent<PlayerCombat>();
+
+        if (combat != null && combat.IsBlocking)
+        {
+            animator.SetFloat("Speed", 0, 0.1f, Time.deltaTime);
+            return;
+        }
+
         moveInput = controls.Player.Move.ReadValue<Vector2>();
         Vector3 direction = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
 

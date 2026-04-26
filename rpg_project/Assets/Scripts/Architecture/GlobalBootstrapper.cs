@@ -6,10 +6,12 @@ public class GlobalBootstrapper : MonoBehaviour
 {
     [Header("Настройки Аудио")]
     [SerializeField] private AudioSource mainMusicSource;
-    [SerializeField] private string nextSceneName = "MainMenu"; 
+    [SerializeField] private string nextSceneName = "MainMenu";
 
     private void Awake()
     {
+        transform.SetParent(null);
+
         if (FindObjectsByType<GlobalBootstrapper>(FindObjectsSortMode.None).Length > 1)
         {
             Destroy(gameObject);
@@ -17,7 +19,6 @@ public class GlobalBootstrapper : MonoBehaviour
         }
 
         DontDestroyOnLoad(gameObject);
-
         InitializeServices();
 
         if (!string.IsNullOrEmpty(nextSceneName) && SceneManager.GetActiveScene().name != nextSceneName)
@@ -35,8 +36,11 @@ public class GlobalBootstrapper : MonoBehaviour
 
         ISaveRepository repository = new JsonSaveRepository();
         SaveInteractor saveInteractor = new SaveInteractor(repository);
-        ServiceLocator.Register<ISaveService>(saveInteractor); 
+        ServiceLocator.Register<ISaveService>(saveInteractor);
 
+        ServiceLocator.Register<IGameSettings>(new GameSettingsService());
+
+        Debug.Log("[Bootstrapper] Все сервисы (Аудио, Сейвы, Настройки) готовы.");
         audioService.PlayMusic();
     }
 }
