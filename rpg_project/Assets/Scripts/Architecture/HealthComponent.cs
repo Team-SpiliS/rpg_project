@@ -3,13 +3,13 @@ using UnityEngine;
 
 public class HealthComponent : MonoBehaviour, IDamageable
 {
-    [Header("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")]
     [SerializeField] private int maxHealth = 100;
     private int currentHealth;
 
     public event Action<int, int> OnHealthChanged;
-    public event Action OnTakeDamage;
+    public event Action<int> OnTakeDamage;
     public event Action OnDeath;
+    public event Action OnBlockHit;
 
     private void Awake()
     {
@@ -18,14 +18,28 @@ public class HealthComponent : MonoBehaviour, IDamageable
 
     public void TakeDamage(int amount, DamageType type)
     {
-        if (currentHealth <= 0) return; 
+        if (currentHealth <= 0) return;
+
+        BossEnemy boss = transform.root.GetComponentInChildren<BossEnemy>();
+
+        if (boss != null && boss.isInvulnerable)
+        {
+            return;
+        }
+
+        PlayerCombat playerCombat = GetComponent<PlayerCombat>();
+        if (playerCombat != null && playerCombat.IsBlocking)
+        {
+            OnBlockHit?.Invoke(); 
+            return;
+        }
 
         currentHealth -= amount;
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth); 
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
-        Debug.Log($"{gameObject.name} пїЅпїЅпїЅпїЅпїЅпїЅпїЅ {amount} пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ {type}. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ: {currentHealth}");
+        Debug.Log($"{gameObject.name} получил {amount} урона типа {type}. Текущее ХП: {currentHealth}");
 
-        OnTakeDamage?.Invoke();
+        OnTakeDamage?.Invoke(amount);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
         if (currentHealth <= 0)
@@ -36,7 +50,6 @@ public class HealthComponent : MonoBehaviour, IDamageable
 
     private void Die()
     {
-        Debug.Log($"{gameObject.name} пїЅпїЅпїЅпїЅ!");
         OnDeath?.Invoke();
     }
 

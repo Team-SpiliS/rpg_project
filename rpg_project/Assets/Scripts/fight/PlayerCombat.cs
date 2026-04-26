@@ -28,6 +28,9 @@ public class PlayerCombat : MonoBehaviour
 
     private Animator animator;
 
+    public bool IsBlocking { get; private set; }
+
+
     public float MagicCooldownPercentage => Mathf.Clamp01((nextMagicTime - Time.time) / magicCooldown);
 
     void Start()
@@ -37,7 +40,7 @@ public class PlayerCombat : MonoBehaviour
         health = GetComponent<HealthComponent>();
         if (health != null)
         {
-            health.OnTakeDamage += InterruptAttack;
+            health.OnTakeDamage += (amount) => InterruptAttack();
         }
     }
 
@@ -52,8 +55,33 @@ public class PlayerCombat : MonoBehaviour
 
     void Update()
     {
+
+        HandleBlockInput();
+
+        if (IsBlocking) return;
+
         HandleMeleeInput();
         HandleMagicInput();
+    }
+
+    private void HandleBlockInput()
+    {
+        if (Keyboard.current.leftAltKey.isPressed)
+        {
+            if (!IsBlocking)
+            {
+                IsBlocking = true;
+                animator.SetBool("IsBlocking", true);
+            }
+        }
+        else
+        {
+            if (IsBlocking)
+            {
+                IsBlocking = false;
+                animator.SetBool("IsBlocking", false);
+            }
+        }
     }
 
     private void HandleMeleeInput()

@@ -10,6 +10,7 @@ public class MainMenuView : MonoBehaviour
 
     [Header("Элементы Настроек")]
     [SerializeField] private Slider _volumeSlider;
+    [SerializeField] private Toggle _peacefulToggle;
 
     [Header("Кнопки (Для привязки в Инспекторе)")]
     [SerializeField] private Button _playButton;
@@ -18,6 +19,7 @@ public class MainMenuView : MonoBehaviour
 
     public event Action OnPlayClicked;
     public event Action<float> OnVolumeSliderChanged;
+    public event Action<bool> OnPeacefulToggleChanged;
 
     private void Awake()
     {
@@ -25,6 +27,7 @@ public class MainMenuView : MonoBehaviour
 
         _settingsButton.onClick.AddListener(ShowSettings);
         _closeSettingsButton.onClick.AddListener(ShowMainMenu);
+        _peacefulToggle.onValueChanged.AddListener(val => OnPeacefulToggleChanged?.Invoke(val));
 
         _volumeSlider.onValueChanged.AddListener(val => OnVolumeSliderChanged?.Invoke(val));
 
@@ -35,6 +38,11 @@ public class MainMenuView : MonoBehaviour
     {
         _mainMenuPanel.SetActive(true);
         _settingsPanel.SetActive(false);
+    }
+
+    public void UpdatePeacefulToggle(bool isOn)
+    {
+        _peacefulToggle.SetIsOnWithoutNotify(isOn);
     }
 
     public void ShowSettings()

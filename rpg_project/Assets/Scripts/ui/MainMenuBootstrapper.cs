@@ -9,11 +9,10 @@ public class MainMenuBootstrapper : MonoBehaviour
     private void Start()
     {
         IAudioService audioService = ServiceLocator.Get<IAudioService>();
+        IGameSettings settings = ServiceLocator.Get<IGameSettings>();
 
         MainMenuModel model = new MainMenuModel();
 
-        _controller = new MainMenuController(model, _mainMenuView, audioService);
-
-        Debug.Log("[MainMenuBootstrapper] MVC Главного меню инициализирован.");
+        _controller = new MainMenuController(model, _mainMenuView, audioService, settings);
     }
 }
