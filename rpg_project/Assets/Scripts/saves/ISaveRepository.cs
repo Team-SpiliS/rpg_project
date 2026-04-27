@@ -1,6 +1,8 @@
 public interface ISaveRepository
 {
-    void Save(GameData data);
-    GameData Load();
+    void Save(WorldSnapshot snapshot);
+
+    WorldSnapshot Load();
+
     bool Exists();
 }
