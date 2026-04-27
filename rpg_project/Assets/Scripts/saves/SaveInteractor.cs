@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class SaveInteractor : ISaveService
 {
     private readonly ISaveRepository _repository;
-    private GameData _currentData;
+    private WorldSnapshot _currentData;
 
     public SaveInteractor(ISaveRepository repository)
     {
@@ -15,13 +15,13 @@ public class SaveInteractor : ISaveService
 
     public void SaveGame()
     {
-        GameData data = new GameData();
+        WorldSnapshot snapshot = new WorldSnapshot();
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
         {
             HealthComponent hc = playerObj.GetComponent<HealthComponent>();
-            data.player = new PlayerData
+            snapshot.player = new PlayerSnapshot
             {
                 position = playerObj.transform.position,
                 health = (hc != null) ? hc.GetCurrentHealth() : 100
@@ -36,7 +36,7 @@ public class SaveInteractor : ISaveService
 
             if (hc != null)
             {
-                data.enemies.Add(new EnemyData
+                snapshot.enemies.Add(new EnemySnapshot
                 {
                     id = enemy.transform.root.name,
                     position = enemy.transform.position,
@@ -45,10 +45,9 @@ public class SaveInteractor : ISaveService
             }
         }
 
-        _repository.Save(data);
-        _currentData = data;
+        _repository.Save(snapshot);
+        _currentData = snapshot;
 
-        Debug.Log($"[SaveInteractor] Сохранено объектов: {data.enemies.Count + 1}");
     }
 
     public void LoadGame()
@@ -56,9 +55,8 @@ public class SaveInteractor : ISaveService
         _currentData = _repository.Load();
         if (_currentData != null)
         {
-            Debug.Log("[SaveInteractor] Данные успешно загружены из файла.");
         }
     }
 
-    public GameData GetCurrentData() => _currentData;
+    public WorldSnapshot GetCurrentData() => _currentData;
 }

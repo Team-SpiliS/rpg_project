@@ -27,8 +27,7 @@ public class GameplayBootstrapper : MonoBehaviour
     private void ApplySaveIfStateExists()
     {
         var interactor = _saveService as SaveInteractor;
-        var data = interactor?.GetCurrentData();
-
+        WorldSnapshot data = interactor?.GetCurrentData();
         if (data == null || data.player == null)
         {
             return;
@@ -47,7 +46,7 @@ public class GameplayBootstrapper : MonoBehaviour
         foreach (var enemy in sceneEnemies)
         {
             string rootName = enemy.transform.root.name;
-            EnemyData savedEnemy = data.enemies.Find(e => e.id == rootName);
+            EnemySnapshot savedEnemy = data.enemies.Find(e => e.id == rootName);
 
             if (savedEnemy != null)
             {
