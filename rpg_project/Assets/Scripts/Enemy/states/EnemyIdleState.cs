@@ -12,36 +12,12 @@ public class EnemyIdleState : AbstractEnemyState
 
     public override void LogicUpdate()
     {
-        bool isPeaceful = enemy.gameSettings.IsPeacefulMode;
-
-        if (enemy is BossEnemy)
-        {
-            if (isPeaceful)
-            {
-                if (enemy.wasHitByPlayer)
-                    enemy.StateMachine.ChangeState(new BossChaseState(enemy));
-                return; 
-            }
-        }
-        else 
-        {
-            if (isPeaceful)
-            {
-                if (enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold)
-                {
-                    enemy.StateMachine.ChangeState(new EnemyFleeState(enemy));
-                }
-                return; 
-            }
-        }
+        if (enemy.gameSettings.IsPeacefulMode) return;
 
         float dist = Vector3.Distance(enemy.transform.position, enemy.player.position);
         if (dist < enemy.detectionRange || enemy.wasHitByPlayer)
         {
-            if (enemy is BossEnemy)
-                enemy.StateMachine.ChangeState(new BossChaseState(enemy));
-            else
-                enemy.StateMachine.ChangeState(new EnemyChaseState(enemy));
+            enemy.StateMachine.ChangeState(new EnemyChaseState(enemy));
         }
     }
 }

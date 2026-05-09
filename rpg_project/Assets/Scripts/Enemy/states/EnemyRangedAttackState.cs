@@ -49,7 +49,7 @@ public class EnemyRangedAttackState : AbstractEnemyState
 
         float dist = Vector3.Distance(enemy.transform.position, enemy.player.position);
 
-        if (dist < _mage.retreatDistance || dist > enemy.attackRange + 0.5f)
+        if (dist < enemy.weaponConfig.retreatDistance || dist > enemy.attackRange + 0.5f)
         {
             enemy.StateMachine.ChangeState(new EnemyChaseState(enemy));
             return;
@@ -75,16 +75,19 @@ public class EnemyRangedAttackState : AbstractEnemyState
 
         yield return new WaitForSeconds(_castDelay);
 
-        if (_mage.projectilePrefab && _mage.shootPoint)
+        if (enemy.weaponConfig.projectilePrefab && enemy.CurrentShootPoint)
         {
-            GameObject proj = Object.Instantiate(_mage.projectilePrefab, _mage.shootPoint.position, enemy.transform.rotation);
-
+            GameObject proj = Object.Instantiate(
+                            enemy.weaponConfig.projectilePrefab,
+                            enemy.CurrentShootPoint.position,
+                            enemy.transform.rotation
+                        );
             Vector3 targetPoint = enemy.player.position + Vector3.up * 1.2f;
             proj.transform.LookAt(targetPoint);
 
             if (proj.TryGetComponent(out MagicProjectile magic))
             {
-                magic.Setup(_mage.magicDamage, "Enemy");
+                magic.Setup(enemy.weaponConfig.baseDamage, "Enemy");
             }
         }
 

@@ -6,7 +6,10 @@ public class EnemyFleeState : AbstractEnemyState
 
     public override void Enter()
     {
-        enemy.animator.ResetTrigger(enemy.animData.attackTrigger);
+        if (HasParameter(enemy.animator, enemy.weaponConfig.lightAttackAnim))
+        {
+            enemy.animator.ResetTrigger(enemy.weaponConfig.lightAttackAnim);
+        }
         enemy.animator.ResetTrigger("Hit"); 
 
         enemy.animator.speed = 1.3f;
@@ -31,5 +34,12 @@ public class EnemyFleeState : AbstractEnemyState
     {
         enemy.animator.speed = 1.0f;
     }
-
+    private bool HasParameter(Animator animator, string paramName)
+    {
+        foreach (AnimatorControllerParameter param in animator.parameters)
+        {
+            if (param.name == paramName) return true;
+        }
+        return false;
+    }
 }

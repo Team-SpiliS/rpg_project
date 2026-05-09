@@ -31,6 +31,8 @@ public class BossEnemy : EnemyBase
 
         if (myHealth != null)
             myHealth.OnTakeDamage += RegisterDamage;
+
+        StateMachine.Initialize(new BossIdleState(this));
     }
 
     private void OnDestroy()
@@ -60,5 +62,10 @@ public class BossEnemy : EnemyBase
         if (isDead || (myHealth != null && myHealth.GetCurrentHealth() <= 0)) return;
 
         base.Update();
+    }
+
+    public override AbstractEnemyState CreateAttackState()
+    {
+        return (AbstractEnemyState)StateMachine.CreateAttackState();
     }
 }

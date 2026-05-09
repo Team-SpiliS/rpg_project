@@ -4,7 +4,6 @@ using System.Collections;
 
 public class PlayerCombat : MonoBehaviour
 {
-    [Header("Физическая атака (ЛКМ)")]
     public int physicalDamage = 25;
     public float attackRange = 1.5f;
     public float meleeCooldown = 0.5f;
@@ -12,11 +11,10 @@ public class PlayerCombat : MonoBehaviour
     public float meleeDamageDelay = 0.3f;
     public Transform attackPoint;
 
-    [Header("Магическая атака (ПКМ)")]
     public GameObject magicPrefab;
     public int magicDamage = 30;
     public float magicCooldown = 2f;
-    [Tooltip("Задержка перед вылетом шара")]
+
     public float magicSpawnDelay = 0.5f;
 
     private float nextMeleeTime = 0f;
