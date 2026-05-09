@@ -8,6 +8,11 @@ public class BossLightAttackState : AbstractEnemyState
 
     public BossLightAttackState(EnemyBase enemy) : base(enemy) { _boss = enemy as BossEnemy; }
 
+    public override void LogicUpdate()
+    {
+        CheckGlobalTransitions();
+    }
+
     public override void Enter()
     {
         if (enemy.agent.isOnNavMesh) enemy.agent.isStopped = true;
@@ -18,7 +23,7 @@ public class BossLightAttackState : AbstractEnemyState
     {
         if (_attackRoutine != null) enemy.StopCoroutine(_attackRoutine);
         if (enemy.agent.isOnNavMesh) enemy.agent.isStopped = false;
-        enemy.animator.speed = 1f; 
+        enemy.animator.speed = 1f;
     }
 
     private IEnumerator AttackRoutine()
@@ -31,10 +36,9 @@ public class BossLightAttackState : AbstractEnemyState
         float delay = _boss.isPhaseTwo ? 0.4f / 1.5f : 0.4f;
         yield return new WaitForSeconds(delay);
 
-        float currentDist = Vector3.Distance(enemy.transform.position, enemy.player.position);
-        if (currentDist <= enemy.attackRange + 0.5f && enemy.playerHealth != null)
+        if (Vector3.Distance(enemy.transform.position, enemy.player.position) <= enemy.attackRange + 0.5f)
         {
-            enemy.playerHealth.TakeDamage(15, DamageType.Physical);
+            enemy.playerHealth?.TakeDamage(15, DamageType.Physical);
         }
 
         yield return new WaitForSeconds(0.6f);

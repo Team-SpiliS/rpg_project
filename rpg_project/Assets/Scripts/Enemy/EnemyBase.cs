@@ -20,14 +20,17 @@ public abstract class EnemyBase : MonoBehaviour
     public HealthComponent playerHealth { get; private set; }
     public IGameSettings gameSettings { get; private set; }
 
-    public EnemyStateMachine StateMachine { get; private set; }
+    public EnemyStateMachine StateMachine { get; protected set; }
 
     [HideInInspector] public bool wasHitByPlayer = false;
     protected bool isDead = false;
 
     protected virtual void Awake()
     {
-        StateMachine = new EnemyStateMachine();
+        if (StateMachine == null)
+        {
+            StateMachine = new EnemyStateMachine(this);
+        }
 
         Transform root = transform.root;
         agent = root.GetComponentInChildren<NavMeshAgent>();
@@ -56,7 +59,11 @@ public abstract class EnemyBase : MonoBehaviour
             myHealth.OnDeath += HandleDeath;
             myHealth.OnTakeDamage += (amount) => wasHitByPlayer = true;
         }
-        StateMachine.Initialize(new EnemyIdleState(this));
+
+        if (StateMachine.CurrentState == null)
+        {
+            StateMachine.Initialize(new EnemyIdleState(this));
+        }
     }
 
     protected virtual void Update()

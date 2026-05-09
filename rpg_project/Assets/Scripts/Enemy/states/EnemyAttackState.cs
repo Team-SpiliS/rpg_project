@@ -37,7 +37,8 @@ public class EnemyAttackState : AbstractEnemyState
 
     public override void LogicUpdate()
     {
-        if (enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold)
+        if (enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold &&
+        enemy.myHealth.GetCurrentHealth() > 0)
         {
             enemy.StateMachine.ChangeState(new EnemyFleeState(enemy));
             return;

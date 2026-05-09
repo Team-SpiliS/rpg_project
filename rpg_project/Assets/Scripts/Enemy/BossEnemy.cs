@@ -2,76 +2,63 @@ using UnityEngine;
 
 public class BossEnemy : EnemyBase
 {
-    [Header("Баланс Босса")]
+    [Header("Boss Settings")]
     public int heavyDamage = 40;
     public int magicDamage = 25;
     public float stunDamageThreshold = 50f;
 
-    [Header("Ссылки для магии")]
+    [Header("References")]
     public GameObject projectilePrefab;
     public Transform shootPoint;
 
     [HideInInspector] public bool isPhaseTwo = false;
     [HideInInspector] public bool isInvulnerable = false;
+    [HideInInspector] public float damageTakenRecently = 0;
 
-    private float _damageTakenRecently = 0;
     private float _lastDamageTime = 0;
     private float _stunResetTime = 3f;
+
+    protected override void Awake()
+    {
+        StateMachine = new BossStateMachine(this);
+
+        base.Awake();
+    }
 
     protected override void Start()
     {
         base.Start();
-        StateMachine.Initialize(new EnemyIdleState(this));
 
         if (myHealth != null)
-            myHealth.OnTakeDamage += HandleBossDamage;
+            myHealth.OnTakeDamage += RegisterDamage;
     }
 
-    private void HandleBossDamage(int amount)
+    private void OnDestroy()
     {
-        if (myHealth.GetCurrentHealth() <= 0) return;
+        if (myHealth != null)
+            myHealth.OnTakeDamage -= RegisterDamage;
+    }
 
-        if (StateMachine.CurrentState is EnemyChaseState && StateMachine.CurrentState is not BossChaseState)
-        {
-            StateMachine.ChangeState(new BossChaseState(this));
-        }
+    public void RegisterDamage(int amount)
+    {
+        wasHitByPlayer = true;
 
-        base.Update();
+        if (Time.time > _lastDamageTime + _stunResetTime)
+            damageTakenRecently = 0;
 
-        wasHitByPlayer = true; 
-
-        if (!isPhaseTwo && myHealth.GetCurrentHealth() <= myHealth.GetMaxHealth() * 0.5f)
-        {
-            isPhaseTwo = true;
-            _damageTakenRecently = 0; 
-            StateMachine.ChangeState(new BossTauntState(this));
-            return;
-        }
-
-        if (StateMachine.CurrentState is BossStunState || StateMachine.CurrentState is BossTauntState) return;
-
-        if (Time.time > _lastDamageTime + _stunResetTime) _damageTakenRecently = 0;
-        _damageTakenRecently += amount;
+        damageTakenRecently += amount;
         _lastDamageTime = Time.time;
+    }
 
-        if (_damageTakenRecently >= stunDamageThreshold)
-        {
-            _damageTakenRecently = 0;
-            StateMachine.ChangeState(new BossStunState(this));
-        }
+    public void ResetStunMeter()
+    {
+        damageTakenRecently = 0;
     }
 
     protected override void Update()
     {
-        if (isDead || myHealth.GetCurrentHealth() <= 0) return;
+        if (isDead || (myHealth != null && myHealth.GetCurrentHealth() <= 0)) return;
 
         base.Update();
-    }
-
-    public override AbstractEnemyState CreateAttackState()
-    {
-        float dist = Vector3.Distance(transform.position, player.position);
-        if (dist > attackRange + 1.5f) return new BossRangedState(this);
-        return (Random.value > 0.6f) ? new BossHeavyAttackState(this) : new BossLightAttackState(this);
     }
 }
