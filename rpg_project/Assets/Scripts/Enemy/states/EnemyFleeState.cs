@@ -6,9 +6,9 @@ public class EnemyFleeState : AbstractEnemyState
 
     public override void Enter()
     {
-        if (HasParameter(enemy.animator, enemy.weaponConfig.lightAttackAnim))
+        if (HasParameter(enemy.animator, enemy.animData.attackTrigger))
         {
-            enemy.animator.ResetTrigger(enemy.weaponConfig.lightAttackAnim);
+            enemy.animator.ResetTrigger(enemy.animData.attackTrigger);
         }
         enemy.animator.ResetTrigger("Hit"); 
 

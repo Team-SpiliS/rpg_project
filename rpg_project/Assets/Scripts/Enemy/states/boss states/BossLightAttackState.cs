@@ -35,6 +35,7 @@ public class BossLightAttackState : AbstractEnemyState
 
         float delay = _boss.isPhaseTwo ? 0.4f / 1.5f : 0.4f;
         yield return new WaitForSeconds(delay);
+        _boss.PlayMeleeHitEffects();
 
         if (Vector3.Distance(enemy.transform.position, enemy.player.position) <= enemy.attackRange + 0.5f)
         {

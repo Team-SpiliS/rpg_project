@@ -13,6 +13,14 @@ public class UniversalSpawner : MonoBehaviour
     private Dictionary<GameObject, Queue<EnemyBase>> _pools = new Dictionary<GameObject, Queue<EnemyBase>>();
     private int _currentActiveCount = 0;
 
+    private int _deathCount = 0;
+    private bool _bossIsActive = false;
+
+    public GameObject bossPrefab;
+
+    public WeaponConfigSO[] bossWeapons; 
+    public ElementConfigSO[] bossElements;
+
     private void Start()
     {
         foreach (var factory in factories)
@@ -81,6 +89,16 @@ public class UniversalSpawner : MonoBehaviour
     private void HandleEnemyDeath(EnemyBase enemy, GameObject prefabKey)
     {
         _currentActiveCount--;
+        if (!_bossIsActive)
+        {
+            _deathCount++;
+            if (_deathCount >= 3)
+            {
+                SpawnBoss(); 
+            }
+        }
+
+
         StartCoroutine(RespawnRoutine(enemy, prefabKey));
     }
 
@@ -96,11 +114,50 @@ public class UniversalSpawner : MonoBehaviour
         {
             SpawnRandomFromPool();
         }
+        if (!_bossIsActive && _currentActiveCount < maxEnemiesOnScene)
+        {
+            SpawnRandomFromPool();
+        }
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireCube(transform.position, areaSize);
+    }
+
+    private void SpawnBoss()
+    {
+        _bossIsActive = true;
+
+        Vector3 spawnPos = transform.position + new Vector3(Random.Range(-5, 5), 0, Random.Range(-5, 5));
+        GameObject bossObj = Instantiate(bossPrefab, spawnPos, Quaternion.identity);
+
+        BossEnemy boss = bossObj.GetComponent<BossEnemy>();
+        if (boss != null)
+        {
+            boss.weaponConfig = bossWeapons[Random.Range(0, bossWeapons.Length)];
+
+            boss.elementConfig = bossElements[Random.Range(0, bossElements.Length)];
+
+            boss.ApplyVisuals();
+        }
+        boss.myHealth.OnDeath += HandleBossDeath;
+    }
+
+    private void HandleBossDeath()
+    {
+
+        _bossIsActive = false;
+
+        _deathCount = 0;
+
+        for (int i = 0; i < maxEnemiesOnScene; i++)
+        {
+            if (_currentActiveCount < maxEnemiesOnScene)
+            {
+                SpawnRandomFromPool();
+            }
+        }
     }
 }

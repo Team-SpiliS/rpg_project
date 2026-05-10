@@ -58,9 +58,14 @@ public class BossRangedState : AbstractEnemyState
 
     private void SpawnFireball()
     {
-        if (_boss.projectilePrefab && _boss.shootPoint)
+        GameObject prefab = _boss.GetCurrentProjectile();
+
+        Transform spawnPoint = _boss.CurrentShootPoint;
+
+        if (prefab != null && spawnPoint != null)
         {
-            GameObject proj = Object.Instantiate(_boss.projectilePrefab, _boss.shootPoint.position, _boss.transform.rotation);
+            GameObject proj = Object.Instantiate(prefab, spawnPoint.position, _boss.transform.rotation);
+
             Vector3 targetPoint = enemy.player.position + Vector3.up * 1.2f;
             proj.transform.LookAt(targetPoint);
 

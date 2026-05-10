@@ -74,7 +74,8 @@ public class EnemyAttackState : AbstractEnemyState
         float currentDist = Vector3.Distance(enemy.transform.position, enemy.player.position);
         if (currentDist <= enemy.attackRange + 0.5f && enemy.playerHealth != null)
         {
-            enemy.playerHealth.TakeDamage(10, DamageType.Physical);
+            int damageFromWeapon = enemy.weaponConfig.baseDamage;
+            enemy.playerHealth.TakeDamage(damageFromWeapon, DamageType.Physical);
         }
 
         yield return new WaitForSeconds(0.3f);

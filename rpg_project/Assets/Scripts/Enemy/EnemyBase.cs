@@ -126,4 +126,16 @@ public abstract class EnemyBase : MonoBehaviour
             return transform;
         }
     }
+
+    public GameObject GetCurrentProjectile()
+    {
+        GameObject projectile = weaponConfig.projectilePrefab;
+
+        if (elementConfig != null && elementConfig.projectileOverride != null)
+        {
+            projectile = elementConfig.projectileOverride;
+        }
+
+        return projectile;
+    }
 }

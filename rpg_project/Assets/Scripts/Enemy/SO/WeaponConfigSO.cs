@@ -6,7 +6,6 @@ public class WeaponConfigSO : ScriptableObject
     public string weaponName;
     public int baseDamage;
     public int weaponVisualIndex; 
-    public string lightAttackAnim;
 
     [Header("Ranged Settings")]
     public GameObject projectilePrefab; 

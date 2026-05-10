@@ -7,10 +7,6 @@ public class BossEnemy : EnemyBase
     public int magicDamage = 25;
     public float stunDamageThreshold = 50f;
 
-    [Header("References")]
-    public GameObject projectilePrefab;
-    public Transform shootPoint;
-
     [HideInInspector] public bool isPhaseTwo = false;
     [HideInInspector] public bool isInvulnerable = false;
     [HideInInspector] public float damageTakenRecently = 0;
@@ -67,5 +63,28 @@ public class BossEnemy : EnemyBase
     public override AbstractEnemyState CreateAttackState()
     {
         return (AbstractEnemyState)StateMachine.CreateAttackState();
+    }
+
+    public void PlayMeleeHitEffects()
+    {
+        if (elementConfig == null) return;
+
+        GameObject vfxPrefab = null;
+
+        if (weaponConfig.weaponVisualIndex == 0)
+        {
+            vfxPrefab = elementConfig.vfx_Sword1;
+        }
+        else
+        {
+            vfxPrefab = elementConfig.vfx_Sword2; 
+        }
+
+        if (vfxPrefab != null)
+        {
+            GameObject vfx = Instantiate(vfxPrefab, CurrentShootPoint.position, Quaternion.identity);
+
+            Destroy(vfx, 2f); 
+        }
     }
 }
