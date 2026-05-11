@@ -11,6 +11,8 @@ public class JsonSaveRepository : ISaveRepository
     {
         public PlayerSnapshot playerData;
         public List<EnemySnapshot> enemiesData;
+        public int scoreData;
+        public int deathCountData;
     }
 
     public void Save(WorldSnapshot snapshot)
@@ -18,13 +20,13 @@ public class JsonSaveRepository : ISaveRepository
         JsonSchema schema = new JsonSchema
         {
             playerData = snapshot.player,
-            enemiesData = snapshot.enemies
+            enemiesData = snapshot.enemies,
+            scoreData = snapshot.score,
+            deathCountData = snapshot.deathCount
         };
 
-        // 2. Сохраняем
         string json = JsonUtility.ToJson(schema, true);
         File.WriteAllText(_path, json);
-        Debug.Log($"[JsonRepository] Сохранено в: {_path}");
     }
 
     public WorldSnapshot Load()
@@ -38,7 +40,9 @@ public class JsonSaveRepository : ISaveRepository
         return new WorldSnapshot
         {
             player = schema.playerData,
-            enemies = schema.enemiesData
+            enemies = schema.enemiesData,
+            score = schema.scoreData,
+            deathCount = schema.deathCountData
         };
     }
 

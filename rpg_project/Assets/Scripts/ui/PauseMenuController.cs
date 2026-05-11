@@ -6,11 +6,13 @@ public class PauseMenuController
     private readonly PauseMenuView _view;
     private readonly ISaveService _saveService;
     private bool _isPaused;
+    private readonly IScoreService _scoreService;
 
-    public PauseMenuController(PauseMenuView view, ISaveService saveService)
+    public PauseMenuController(PauseMenuView view, ISaveService saveService, IScoreService scoreService)
     {
         _view = view;
         _saveService = saveService;
+        _scoreService = scoreService;
 
         _view.OnContinueClicked += TogglePause;
         _view.OnSaveClicked += SaveGame;
@@ -25,6 +27,10 @@ public class PauseMenuController
 
         if (_isPaused)
         {
+            if (_scoreService != null)
+            {
+                _view.SetScoreText($"Ñ÷¸ò: {_scoreService.CurrentScore}");
+            }
             _view.Show();
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
@@ -42,8 +48,12 @@ public class PauseMenuController
     private void LoadGame()
     {
         _saveService.LoadGame();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        Time.timeScale = 1f;
+        var bootstrapper = Object.FindObjectOfType<GameplayBootstrapper>();
+        if (bootstrapper != null)
+        {
+            bootstrapper.ApplySaveIfStateExists();
+        }
+        TogglePause();
     }
 
     private void GoToMainMenu()

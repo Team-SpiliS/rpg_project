@@ -7,6 +7,7 @@ public class GlobalBootstrapper : MonoBehaviour
     [Header("Настройки Аудио")]
     [SerializeField] private AudioSource mainMusicSource;
     [SerializeField] private string nextSceneName = "MainMenu";
+    [SerializeField] private EnemyKilledEventSO _enemyDeathEvent;
 
     private void Awake()
     {
@@ -31,16 +32,18 @@ public class GlobalBootstrapper : MonoBehaviour
     {
         ServiceLocator.Clear();
 
+        var scoreInteractor = new ScoreInteractor(_enemyDeathEvent);
+        ServiceLocator.Register<IScoreService>(scoreInteractor);
+
         IAudioService audioService = new UnityAudioService(mainMusicSource);
         ServiceLocator.Register<IAudioService>(audioService);
 
         ISaveRepository repository = new JsonSaveRepository();
-        SaveInteractor saveInteractor = new SaveInteractor(repository);
+        SaveInteractor saveInteractor = new SaveInteractor(repository, scoreInteractor);
         ServiceLocator.Register<ISaveService>(saveInteractor);
 
         ServiceLocator.Register<IGameSettings>(new GameSettingsService());
 
-        Debug.Log("[Bootstrapper] Все сервисы (Аудио, Сейвы, Настройки) готовы.");
         audioService.PlayMusic();
     }
 }

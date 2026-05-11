@@ -6,14 +6,11 @@ using System;
 
 public class UIController : MonoBehaviour
 {
-    [Header("Здоровье Игрока")]
     public Slider healthSlider;
     public TextMeshProUGUI healthText;
 
-    [Header("Кулдаун Магии")]
     public Image magicCooldownMask;
 
-    [Header("Экран Смерти")]
     public GameObject gameOverPanel;
 
     private HealthComponent playerHealth;

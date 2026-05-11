@@ -13,13 +13,28 @@ public class BossIdleState : AbstractEnemyState
     {
         enemy.animator.CrossFade(enemy.animData.idle, 0.2f);
         if (enemy.agent.isOnNavMesh) enemy.agent.ResetPath();
+
+        enemy.wasHitByPlayer = false;
     }
 
     public override void LogicUpdate()
     {
-        if (enemy.wasHitByPlayer || Vector3.Distance(enemy.transform.position, enemy.player.position) < enemy.detectionRange)
+        bool isPeaceful = enemy.gameSettings.IsPeacefulMode;
+        float dist = Vector3.Distance(enemy.transform.position, enemy.player.position);
+
+        if (isPeaceful)
         {
-            enemy.StateMachine.ChangeState(new BossChaseState(enemy));
+            if (enemy.wasHitByPlayer)
+            {
+                enemy.StateMachine.ChangeState(new BossChaseState(enemy));
+            }
+        }
+        else
+        {
+            if (enemy.wasHitByPlayer || dist < enemy.detectionRange)
+            {
+                enemy.StateMachine.ChangeState(new BossChaseState(enemy));
+            }
         }
     }
 }

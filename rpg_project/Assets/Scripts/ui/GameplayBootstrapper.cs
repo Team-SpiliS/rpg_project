@@ -10,10 +10,9 @@ public class GameplayBootstrapper : MonoBehaviour
     private void Start()
     {
         _saveService = ServiceLocator.Get<ISaveService>();
+        var scoreService = ServiceLocator.Get<IScoreService>();
 
-        _pauseController = new PauseMenuController(_pauseMenuView, _saveService);
-
-        ApplySaveIfStateExists();
+        _pauseController = new PauseMenuController(_pauseMenuView, _saveService, scoreService);
     }
 
     private void Update()
@@ -24,42 +23,30 @@ public class GameplayBootstrapper : MonoBehaviour
         }
     }
 
-    private void ApplySaveIfStateExists()
+    public void ApplySaveIfStateExists()
     {
-        var interactor = _saveService as SaveInteractor;
-        WorldSnapshot data = interactor?.GetCurrentData();
-        if (data == null || data.player == null)
-        {
-            return;
-        }
+        WorldSnapshot data = _saveService.GetCurrentData();
+        if (data == null) return;
 
         GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
+        if (player != null && data.player != null)
         {
+            var cc = player.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+
             player.transform.position = data.player.position;
+
+            if (cc != null) cc.enabled = true;
+
             var hc = player.GetComponent<HealthComponent>();
             if (hc != null) hc.LoadHealth(data.player.health);
         }
 
-        GameObject[] sceneEnemies = GameObject.FindGameObjectsWithTag("Enemy");
-
-        foreach (var enemy in sceneEnemies)
+        var spawner = FindObjectOfType<UniversalSpawner>();
+        if (spawner != null)
         {
-            string rootName = enemy.transform.root.name;
-            EnemySnapshot savedEnemy = data.enemies.Find(e => e.id == rootName);
-
-            if (savedEnemy != null)
-            {
-                enemy.transform.position = savedEnemy.position;
-                var hc = enemy.GetComponent<HealthComponent>();
-                if (hc == null) hc = enemy.GetComponentInChildren<HealthComponent>();
-
-                if (hc != null) hc.LoadHealth(savedEnemy.health);
-            }
-            else
-            {
-                Destroy(enemy.transform.root.gameObject);
-            }
+            spawner.SetDeathCount(data.deathCount); 
+            spawner.RestoreFromSave(data.enemies);
         }
     }
 }

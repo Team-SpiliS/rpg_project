@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class PauseMenuView : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class PauseMenuView : MonoBehaviour
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _loadButton;
     [SerializeField] private Button _mainMenuButton;
+    [SerializeField] private TextMeshProUGUI _scoreText;
 
     public event Action OnContinueClicked;
     public event Action OnSaveClicked;
@@ -23,6 +25,11 @@ public class PauseMenuView : MonoBehaviour
         _mainMenuButton.onClick.AddListener(() => OnMainMenuClicked?.Invoke());
 
         Hide(); 
+    }
+
+    public void SetScoreText(string text)
+    {
+        if (_scoreText != null) _scoreText.text = text;
     }
 
     public void Show() => _pausePanel.SetActive(true);

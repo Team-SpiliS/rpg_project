@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2389cf849a6a15140b195a138d6b28c0, type: 3}
   m_Name: sword factory
   m_EditorClassIdentifier: 
+  enemyId: sword
   prefab: {fileID: 5490360720348356523, guid: cbb3afc1e05e4e74891e523ff04dbcee, type: 3}
   weapon: {fileID: 11400000, guid: 34043aa59c75b9d47a0ce69c2b955e41, type: 2}
   element: {fileID: 0}

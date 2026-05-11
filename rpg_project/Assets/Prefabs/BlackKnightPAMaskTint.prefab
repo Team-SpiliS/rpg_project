@@ -2328,7 +2328,7 @@ GameObject:
   - component: {fileID: 407376300632578107}
   m_Layer: 0
   m_Name: BlackKnightPAMaskTint
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2420,6 +2420,7 @@ MonoBehaviour:
   - {fileID: 9219777931719822384}
   weaponConfig: {fileID: 0}
   elementConfig: {fileID: 0}
+  originFactory: {fileID: 0}
   wasHitByPlayer: 0
   heavyDamage: 20
   magicDamage: 15

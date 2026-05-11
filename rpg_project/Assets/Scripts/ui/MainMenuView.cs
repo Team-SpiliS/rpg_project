@@ -4,15 +4,12 @@ using UnityEngine.UI;
 
 public class MainMenuView : MonoBehaviour
 {
-    [Header("Ёкраны")]
     [SerializeField] private GameObject _mainMenuPanel;
     [SerializeField] private GameObject _settingsPanel;
 
-    [Header("Ёлементы Ќастроек")]
     [SerializeField] private Slider _volumeSlider;
     [SerializeField] private Toggle _peacefulToggle;
 
-    [Header(" нопки (ƒл€ прив€зки в »нспекторе)")]
     [SerializeField] private Button _playButton;
     [SerializeField] private Button _settingsButton;
     [SerializeField] private Button _closeSettingsButton;

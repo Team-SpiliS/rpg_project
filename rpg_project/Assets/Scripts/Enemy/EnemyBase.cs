@@ -20,6 +20,8 @@ public abstract class EnemyBase : MonoBehaviour
     public WeaponConfigSO weaponConfig;
     public ElementConfigSO elementConfig;
 
+    public EnemyFactorySO originFactory;
+
     public Transform player { get; private set; }
     public HealthComponent playerHealth { get; private set; }
     public IGameSettings gameSettings { get; private set; }

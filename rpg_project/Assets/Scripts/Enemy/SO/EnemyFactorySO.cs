@@ -3,6 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Enemy/Factory")]
 public class EnemyFactorySO : ScriptableObject
 {
+    public string enemyId;
     public GameObject prefab;
     public WeaponConfigSO weapon;
     public ElementConfigSO element;
@@ -16,6 +17,7 @@ public class EnemyFactorySO : ScriptableObject
         {
             enemy.weaponConfig = weapon;
             enemy.elementConfig = element;
+            enemy.originFactory = this;
 
             enemy.ApplyVisuals();
         }
