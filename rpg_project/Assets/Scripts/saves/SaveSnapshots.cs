@@ -19,4 +19,6 @@ public class WorldSnapshot
 {
     public PlayerSnapshot player;
     public List<EnemySnapshot> enemies = new List<EnemySnapshot>();
+    public int score;
+    public int deathCount;
 }

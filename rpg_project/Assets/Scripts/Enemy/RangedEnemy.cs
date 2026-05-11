@@ -2,11 +2,18 @@ using UnityEngine;
 
 public class RangedEnemy : EnemyBase
 {
-    [Header("Настройки Мага")]
-    public float retreatDistance = 5f;
-    public int magicDamage = 25;
-    public GameObject projectilePrefab;
-    public Transform shootPoint;
+
+    protected override void Awake()
+    {
+        StateMachine = new EnemyStateMachine(this);
+        base.Awake();
+    }
+
+    protected override void Start()
+    {
+        base.Start();
+        StateMachine.Initialize(new EnemyIdleState(this));
+    }
 
     public override AbstractEnemyState CreateAttackState()
     {

@@ -4,11 +4,13 @@ using System.Collections.Generic;
 public class SaveInteractor : ISaveService
 {
     private readonly ISaveRepository _repository;
+    private readonly IScoreService _scoreService;
     private WorldSnapshot _currentData;
 
-    public SaveInteractor(ISaveRepository repository)
+    public SaveInteractor(ISaveRepository repository, IScoreService scoreService)
     {
         _repository = repository;
+        _scoreService = scoreService;
     }
 
     public bool HasSave() => _repository.Exists();
@@ -16,6 +18,12 @@ public class SaveInteractor : ISaveService
     public void SaveGame()
     {
         WorldSnapshot snapshot = new WorldSnapshot();
+        snapshot.score = _scoreService.CurrentScore;
+        var spawner = Object.FindAnyObjectByType<UniversalSpawner>();
+        if (spawner != null)
+        {
+            snapshot.deathCount = spawner.deathCount;
+        }
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
@@ -28,33 +36,50 @@ public class SaveInteractor : ISaveService
             };
         }
 
-        GameObject[] enemiesOnScene = GameObject.FindGameObjectsWithTag("Enemy");
+        EnemyBase[] enemiesOnScene = Object.FindObjectsByType<EnemyBase>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         foreach (var enemy in enemiesOnScene)
         {
-            HealthComponent hc = enemy.GetComponent<HealthComponent>();
-            if (hc == null) hc = enemy.GetComponentInChildren<HealthComponent>();
-
-            if (hc != null)
+            if (enemy.myHealth.GetCurrentHealth() <= 0) continue;
+            string saveId;
+            if (enemy is BossEnemy)
             {
-                snapshot.enemies.Add(new EnemySnapshot
-                {
-                    id = enemy.transform.root.name,
-                    position = enemy.transform.position,
-                    health = hc.GetCurrentHealth()
-                });
+                saveId = "Boss";
             }
+            else
+            {
+
+                saveId = enemy.originFactory != null ? enemy.originFactory.enemyId : "Unknown";
+            }
+            snapshot.enemies.Add(new EnemySnapshot
+            {
+                id = saveId,
+                position = enemy.transform.position,
+                health = enemy.myHealth != null ? enemy.myHealth.GetCurrentHealth() : 100
+            });
+
         }
 
         _repository.Save(snapshot);
         _currentData = snapshot;
-
     }
 
     public void LoadGame()
     {
+
+        if (!_repository.Exists())
+        {
+            return;
+        }
+
         _currentData = _repository.Load();
+
         if (_currentData != null)
         {
+
+            if (_scoreService != null)
+            {
+                _scoreService.SetScore(_currentData.score);
+            }
         }
     }
 

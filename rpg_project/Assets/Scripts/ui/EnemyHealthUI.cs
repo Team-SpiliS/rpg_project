@@ -33,6 +33,14 @@ public class EnemyHealthUI : MonoBehaviour
         }
     }
 
+    public void ResetVisuals()
+    {
+        health = GetComponent<HealthComponent>();
+        float max = health.GetMaxHealth();
+        mainSlider.value = max;
+        drainSlider.value = max;
+    }
+
     void Update()
     {
         if (drainSlider.value > mainSlider.value)

@@ -32,6 +32,11 @@ public class MainMenuController
 
     private void HandlePlayClicked()
     {
+        var scoreService = ServiceLocator.Get<IScoreService>();
+        if (scoreService != null)
+        {
+            scoreService.SetScore(0); 
+        }
         SceneManager.LoadScene("Level_1"); 
     }
 

@@ -37,7 +37,6 @@ public class HealthComponent : MonoBehaviour, IDamageable
         currentHealth -= amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
-        Debug.Log($"{gameObject.name} получил {amount} урона типа {type}. Текущее ХП: {currentHealth}");
 
         OnTakeDamage?.Invoke(amount);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);

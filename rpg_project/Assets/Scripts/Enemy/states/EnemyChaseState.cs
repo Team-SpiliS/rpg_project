@@ -11,7 +11,8 @@ public class EnemyChaseState : AbstractEnemyState
 
     public override void LogicUpdate()
     {
-        if (enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold)
+        if (enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold &&
+        enemy.myHealth.GetCurrentHealth() > 0)
         {
             enemy.StateMachine.ChangeState(new EnemyFleeState(enemy));
             return;
@@ -19,12 +20,12 @@ public class EnemyChaseState : AbstractEnemyState
 
         float dist = Vector3.Distance(enemy.transform.position, enemy.player.position);
 
-        if (enemy is RangedEnemy mage && dist < mage.retreatDistance)
+        if (enemy is RangedEnemy && dist < enemy.weaponConfig.retreatDistance)
         {
             Vector3 retreatDir = (enemy.transform.position - enemy.player.position).normalized;
             Vector3 retreatPos = enemy.transform.position + retreatDir * 5f;
             if (enemy.agent.isOnNavMesh) enemy.agent.SetDestination(retreatPos);
-            return; 
+            return;
         }
 
         if (dist <= enemy.attackRange)

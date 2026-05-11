@@ -3,32 +3,36 @@ using UnityEngine.AI;
 
 public abstract class EnemyBase : MonoBehaviour
 {
-    [Header("Параметры ИИ")]
     public float detectionRange = 10f;
     public float attackRange = 2f;
     public float fleeHealthThreshold = 25f;
 
-    [Header("Имена анимаций")]
-    public EnemyAnimationData animData;
-
-    [Header("Компоненты")]
     public NavMeshAgent agent;
     public Animator animator;
+    public EnemyAnimationData animData;
     public HealthComponent myHealth;
+
+    [Header("Visual References")]
+    public GameObject[] visualWeapons;
+    public Transform[] weaponShootPoints;
+
+    [Header("Configs")]
+    public WeaponConfigSO weaponConfig;
+    public ElementConfigSO elementConfig;
+
+    public EnemyFactorySO originFactory;
 
     public Transform player { get; private set; }
     public HealthComponent playerHealth { get; private set; }
     public IGameSettings gameSettings { get; private set; }
 
-    public EnemyStateMachine StateMachine { get; private set; }
+    public EnemyStateMachine StateMachine { get; protected set; }
 
     [HideInInspector] public bool wasHitByPlayer = false;
     protected bool isDead = false;
 
     protected virtual void Awake()
     {
-        StateMachine = new EnemyStateMachine();
-
         Transform root = transform.root;
         agent = root.GetComponentInChildren<NavMeshAgent>();
         animator = root.GetComponentInChildren<Animator>();
@@ -40,11 +44,7 @@ public abstract class EnemyBase : MonoBehaviour
             player = p.transform;
             playerHealth = p.GetComponent<HealthComponent>();
         }
-    }
-
-    public virtual AbstractEnemyState CreateAttackState()
-    {
-        return new EnemyAttackState(this);
+        ApplyVisuals();
     }
 
     protected virtual void Start()
@@ -56,19 +56,16 @@ public abstract class EnemyBase : MonoBehaviour
             myHealth.OnDeath += HandleDeath;
             myHealth.OnTakeDamage += (amount) => wasHitByPlayer = true;
         }
-        StateMachine.Initialize(new EnemyIdleState(this));
     }
 
     protected virtual void Update()
     {
-        if (isDead) return;
-        StateMachine.CurrentState?.LogicUpdate();
+        if (!isDead) StateMachine?.CurrentState?.LogicUpdate();
     }
 
     protected virtual void FixedUpdate()
     {
-        if (isDead) return;
-        StateMachine.CurrentState?.PhysicsUpdate();
+        if (!isDead) StateMachine?.CurrentState?.PhysicsUpdate();
     }
 
     public void RotateTowardsPlayer()
@@ -79,12 +76,68 @@ public abstract class EnemyBase : MonoBehaviour
         if (dir != Vector3.zero) transform.rotation = Quaternion.LookRotation(dir);
     }
 
+    public abstract AbstractEnemyState CreateAttackState();
+
     private void HandleDeath()
     {
         isDead = true;
         if (agent != null) agent.enabled = false;
-        Collider[] colliders = transform.root.GetComponentsInChildren<Collider>();
-        foreach (var col in colliders) col.enabled = false;
         this.enabled = false;
+    }
+
+
+    public virtual void ApplyVisuals()
+    {
+        foreach (var w in visualWeapons) w.SetActive(false);
+
+        if (weaponConfig != null && visualWeapons.Length > weaponConfig.weaponVisualIndex)
+        {
+            visualWeapons[weaponConfig.weaponVisualIndex].SetActive(true);
+        }
+    }
+
+
+    public virtual void ResetEnemy()
+    {
+        isDead = false;
+        wasHitByPlayer = false;
+        if (agent != null) agent.enabled = true;
+        this.enabled = true;
+
+        myHealth.LoadHealth(myHealth.GetMaxHealth());
+
+        var healthUI = GetComponentInChildren<EnemyHealthUI>();
+        if (healthUI != null)
+        {
+            healthUI.ResetVisuals();
+        }
+
+        StateMachine.ChangeState(new EnemyIdleState(this));
+    }
+
+    public Transform CurrentShootPoint
+    {
+        get
+        {
+            if (weaponShootPoints != null &&
+                weaponShootPoints.Length > weaponConfig.weaponVisualIndex &&
+                weaponShootPoints[weaponConfig.weaponVisualIndex] != null)
+            {
+                return weaponShootPoints[weaponConfig.weaponVisualIndex];
+            }
+            return transform;
+        }
+    }
+
+    public GameObject GetCurrentProjectile()
+    {
+        GameObject projectile = weaponConfig.projectilePrefab;
+
+        if (elementConfig != null && elementConfig.projectileOverride != null)
+        {
+            projectile = elementConfig.projectileOverride;
+        }
+
+        return projectile;
     }
 }

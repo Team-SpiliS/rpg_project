@@ -4,12 +4,9 @@ public class BossChaseState : AbstractEnemyState
 {
     private BossEnemy _boss;
     private float _magicCheckTimer;
-    private float _checkInterval = 2f; 
+    private float _checkInterval = 2f;
 
-    public BossChaseState(EnemyBase enemy) : base(enemy)
-    {
-        _boss = enemy as BossEnemy;
-    }
+    public BossChaseState(EnemyBase enemy) : base(enemy) { _boss = enemy as BossEnemy; }
 
     public override void Enter()
     {
@@ -19,7 +16,9 @@ public class BossChaseState : AbstractEnemyState
 
     public override void LogicUpdate()
     {
-        if (enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold)
+        if (CheckGlobalTransitions()) return; 
+
+        if ((enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold) && enemy.myHealth.GetCurrentHealth() > 0)
         {
             enemy.StateMachine.ChangeState(new EnemyFleeState(enemy));
             return;
@@ -30,26 +29,19 @@ public class BossChaseState : AbstractEnemyState
         if (Time.time > _magicCheckTimer)
         {
             _magicCheckTimer = Time.time + _checkInterval;
-
-            if (dist < 15f && dist > enemy.attackRange + 2f)
+            if (dist < 15f && dist > enemy.attackRange + 2f && Random.value < 0.3f)
             {
-                if (Random.value < 0.3f) 
-                {
-                    enemy.StateMachine.ChangeState(new BossRangedState(enemy));
-                    return;
-                }
+                enemy.StateMachine.ChangeState(new BossRangedState(enemy));
+                return;
             }
         }
 
         if (dist <= enemy.attackRange)
         {
-            enemy.StateMachine.ChangeState(enemy.CreateAttackState());
+            enemy.StateMachine.ChangeState(enemy.StateMachine.CreateAttackState());
             return;
         }
 
-        if (enemy.agent.isOnNavMesh)
-        {
-            enemy.agent.SetDestination(enemy.player.position);
-        }
+        if (enemy.agent.isOnNavMesh) enemy.agent.SetDestination(enemy.player.position);
     }
 }

@@ -10,25 +10,25 @@ public class BossTauntState : AbstractEnemyState
     public override void Enter()
     {
         if (enemy.agent.isOnNavMesh) enemy.agent.isStopped = true;
-
-        if (enemy is BossEnemy boss) boss.isInvulnerable = true;
+        _boss.isInvulnerable = true; 
 
         enemy.StartCoroutine(TauntRoutine());
     }
 
     public override void Exit()
     {
-        if (enemy is BossEnemy boss) boss.isInvulnerable = false;
-
+        _boss.isInvulnerable = false;
         if (enemy.agent.isOnNavMesh) enemy.agent.isStopped = false;
     }
+
+    public override void LogicUpdate() { }
 
     private IEnumerator TauntRoutine()
     {
         enemy.animator.CrossFade(enemy.animData.taunt, 0.2f);
-        Debug.Log("ÁÎÑÑ Â ÔÀÇÅ 2");
-
         yield return new WaitForSeconds(2.5f);
+
+        _boss.isPhaseTwo = true;
 
         enemy.StateMachine.ChangeState(new BossChaseState(enemy));
     }

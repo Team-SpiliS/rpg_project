@@ -8,6 +8,11 @@ public class BossHeavyAttackState : AbstractEnemyState
 
     public BossHeavyAttackState(EnemyBase enemy) : base(enemy) { _boss = enemy as BossEnemy; }
 
+    public override void LogicUpdate()
+    {
+        CheckGlobalTransitions();
+    }
+
     public override void Enter()
     {
         if (enemy.agent.isOnNavMesh) enemy.agent.isStopped = true;
@@ -24,17 +29,16 @@ public class BossHeavyAttackState : AbstractEnemyState
     private IEnumerator AttackRoutine()
     {
         enemy.RotateTowardsPlayer();
-
         enemy.animator.speed = _boss.isPhaseTwo ? 1.5f : 1f;
         enemy.animator.CrossFade(enemy.animData.heavyAttack, 0.2f);
 
         float delay = _boss.isPhaseTwo ? 0.7f / 1.5f : 0.7f;
         yield return new WaitForSeconds(delay);
+        _boss.PlayMeleeHitEffects();
 
-        float currentDist = Vector3.Distance(enemy.transform.position, enemy.player.position);
-        if (currentDist <= enemy.attackRange + 0.5f && enemy.playerHealth != null)
+        if (Vector3.Distance(enemy.transform.position, enemy.player.position) <= enemy.attackRange + 0.5f)
         {
-            enemy.playerHealth.TakeDamage(_boss.heavyDamage, DamageType.Physical);
+            enemy.playerHealth?.TakeDamage(_boss.heavyDamage, DamageType.Physical);
         }
 
         yield return new WaitForSeconds(1.0f);
