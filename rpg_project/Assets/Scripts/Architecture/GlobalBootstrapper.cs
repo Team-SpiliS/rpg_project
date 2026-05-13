@@ -32,7 +32,7 @@ public class GlobalBootstrapper : MonoBehaviour
     {
         ServiceLocator.Clear();
 
-        var scoreInteractor = new ScoreInteractor(_enemyDeathEvent);
+        var scoreInteractor = new ScoreService(_enemyDeathEvent);
         ServiceLocator.Register<IScoreService>(scoreInteractor);
 
         IAudioService audioService = new UnityAudioService(mainMusicSource);

@@ -12,7 +12,12 @@ public class BossEnemy : EnemyBase
     [HideInInspector] public float damageTakenRecently = 0;
 
     private float _lastDamageTime = 0;
-    private float _stunResetTime = 3f;
+    private float _stunResetTime = 5f;
+
+    public event System.Action OnPhaseChanged;
+    public event System.Action OnStunTriggered;
+
+
 
     protected override void Awake()
     {
@@ -42,9 +47,23 @@ public class BossEnemy : EnemyBase
         wasHitByPlayer = true;
 
         if (Time.time > _lastDamageTime + _stunResetTime)
-            damageTakenRecently = 0;
+            ResetStunMeter();
 
         damageTakenRecently += amount;
+
+        if (myHealth.GetCurrentHealth() <= myHealth.GetMaxHealth() * 0.5f && !isPhaseTwo)
+        {
+            isPhaseTwo = true;
+            OnPhaseChanged?.Invoke();
+            return;
+        }
+        if (damageTakenRecently >= stunDamageThreshold)
+        {
+            OnStunTriggered?.Invoke();
+            Debug.Log('1');
+            ResetStunMeter();
+            return;
+        }
         _lastDamageTime = Time.time;
     }
 
@@ -60,10 +79,6 @@ public class BossEnemy : EnemyBase
         base.Update();
     }
 
-    public override AbstractEnemyState CreateAttackState()
-    {
-        return (AbstractEnemyState)StateMachine.CreateAttackState();
-    }
 
     public void PlayMeleeHitEffects()
     {
@@ -87,4 +102,10 @@ public class BossEnemy : EnemyBase
             Destroy(vfx, 2f); 
         }
     }
+
+    public override AbstractEnemyState CreateAttackState()
+    {
+        return new EnemyRangedAttackState(this);
+    }
+
 }

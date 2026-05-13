@@ -14,8 +14,6 @@ public class BossRangedState : AbstractEnemyState
 
     public override void LogicUpdate()
     {
-        if (CheckGlobalTransitions()) return;
-
         if ((enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold) && enemy.myHealth.GetCurrentHealth() > 0)
         {
             enemy.StateMachine.ChangeState(new EnemyFleeState(enemy));

@@ -14,5 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyId: mag_1
   prefab: {fileID: 3435756647636407791, guid: a36566f7c2359ad45b9e12f10d2ba8d6, type: 3}
-  weapon: {fileID: 11400000, guid: 97285af9eeb0e494d91911f3807b92ff, type: 2}
-  element: {fileID: 0}
+  weapon:
+  - {fileID: 11400000, guid: 97285af9eeb0e494d91911f3807b92ff, type: 2}
+  - {fileID: 11400000, guid: 37ca0ce225e97a34f9a1dc70e1f17a60, type: 2}
+  element: []

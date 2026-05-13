@@ -69,11 +69,6 @@ public class UniversalSpawner : MonoBehaviour
             enemy.myHealth.OnDeath += () => HandleEnemyDeath(enemy, targetPrefab);
         }
 
-        enemy.weaponConfig = factory.weapon;
-        enemy.elementConfig = factory.element;
-        enemy.originFactory = factory;
-        enemy.ApplyVisuals();
-
         enemy.transform.position = position;
         enemy.gameObject.SetActive(true);
         enemy.ResetEnemy();
@@ -143,7 +138,7 @@ public class UniversalSpawner : MonoBehaviour
         {
             if (snap.id == "Boss")
             {
-                RestoreBoss(snap.position, snap.health);
+                SpawnBoss(snap.position, snap.health);
             }
             else
             {
@@ -164,40 +159,33 @@ public class UniversalSpawner : MonoBehaviour
         isManualLoading = false; 
     }
 
-    private void RestoreBoss(Vector3 position, int health)
+    private void SpawnBoss()
+    {
+        Vector3 spawnPos = transform.position + new Vector3(Random.Range(-5, 5), 0, Random.Range(-5, 5));
+
+        SpawnBoss(spawnPos, -1);
+    }
+
+    private void SpawnBoss(Vector3 position, int health = -1)
     {
         _bossIsActive = true;
         GameObject bossObj = Instantiate(bossPrefab, position, Quaternion.identity);
+        BossEnemy boss = bossObj.GetComponent<BossEnemy>();
 
-        _currentBoss = bossObj.GetComponent<BossEnemy>();
-        if (_currentBoss != null)
+        if (boss != null)
         {
-            _currentBoss.weaponConfig = bossWeapons[Random.Range(0, bossWeapons.Length)];
-            _currentBoss.elementConfig = bossElements[Random.Range(0, bossElements.Length)];
-            _currentBoss.ApplyVisuals();
-            _currentBoss.myHealth.OnDeath += HandleBossDeath;
-            _currentBoss.name = "BOSS_INSTANCE";
+            boss.weaponConfig = bossWeapons[Random.Range(0, bossWeapons.Length)];
+            boss.elementConfig = bossElements[Random.Range(0, bossElements.Length)];
+            boss.ApplyVisuals();
+            boss.myHealth.OnDeath += HandleBossDeath;
 
-            if (_currentBoss.myHealth != null) _currentBoss.myHealth.LoadHealth(health);
-        }
-    }
+            boss.name = "BOSS_INSTANCE";
 
-    private void SpawnBoss()
-    {
-        _bossIsActive = true;
-        Vector3 spawnPos = transform.position + new Vector3(Random.Range(-5, 5), 0, Random.Range(-5, 5));
-
-        GameObject bossObj = Instantiate(bossPrefab, spawnPos, Quaternion.identity);
-
-        _currentBoss = bossObj.GetComponent<BossEnemy>();
-        if (_currentBoss != null)
-        {
-            _currentBoss.weaponConfig = bossWeapons[Random.Range(0, bossWeapons.Length)];
-            _currentBoss.elementConfig = bossElements[Random.Range(0, bossElements.Length)];
-            _currentBoss.ApplyVisuals();
-            _currentBoss.myHealth.OnDeath += HandleBossDeath;
-
-            _currentBoss.name = "BOSS_INSTANCE";
+            if (health != -1 && boss.myHealth != null)
+            {
+                boss.myHealth.LoadHealth(health);
+            }
+            _currentBoss = boss;
         }
     }
 

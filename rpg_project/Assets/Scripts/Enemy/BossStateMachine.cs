@@ -9,6 +9,7 @@ public class BossStateMachine : EnemyStateMachine
         _boss = boss;
     }
 
+    
     public override IEnemyState CreateAttackState()
     {
         float dist = Vector3.Distance(_boss.transform.position, _boss.player.position);

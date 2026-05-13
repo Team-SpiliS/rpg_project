@@ -8,15 +8,14 @@ public class BossHeavyAttackState : AbstractEnemyState
 
     public BossHeavyAttackState(EnemyBase enemy) : base(enemy) { _boss = enemy as BossEnemy; }
 
-    public override void LogicUpdate()
-    {
-        CheckGlobalTransitions();
-    }
+    
 
     public override void Enter()
     {
         if (enemy.agent.isOnNavMesh) enemy.agent.isStopped = true;
         _attackRoutine = enemy.StartCoroutine(AttackRoutine());
+        _boss.OnPhaseChanged += HandlePhaseChange;
+        _boss.OnStunTriggered += HandleStunState;
     }
 
     public override void Exit()
@@ -24,6 +23,9 @@ public class BossHeavyAttackState : AbstractEnemyState
         if (_attackRoutine != null) enemy.StopCoroutine(_attackRoutine);
         if (enemy.agent.isOnNavMesh) enemy.agent.isStopped = false;
         enemy.animator.speed = 1f;
+        _boss.OnPhaseChanged -= HandlePhaseChange;
+        _boss.OnStunTriggered -= HandleStunState;
+
     }
 
     private IEnumerator AttackRoutine()
@@ -34,16 +36,31 @@ public class BossHeavyAttackState : AbstractEnemyState
 
         float delay = _boss.isPhaseTwo ? 0.7f / 1.5f : 0.7f;
         yield return new WaitForSeconds(delay);
+        _boss.PlayMeleeHitEffects();
 
         if (Vector3.Distance(enemy.transform.position, enemy.player.position) <= enemy.attackRange + 0.5f)
         {
             enemy.playerHealth?.TakeDamage(_boss.heavyDamage, DamageType.Physical);
         }
 
-        yield return new WaitForSeconds(0.1f);
-        _boss.PlayMeleeHitEffects();
-
         yield return new WaitForSeconds(1.0f);
         enemy.StateMachine.ChangeState(new BossChaseState(enemy));
+    }
+
+    public void HandlePhaseChange()
+    {
+        _boss.StateMachine.ChangeState(new BossTauntState(enemy));
+        return;
+    }
+
+    public void HandleStunState()
+    {
+        Debug.Log('2');
+
+        _boss.StateMachine.ChangeState(new BossStunState(enemy));
+        Debug.Log("state changed");
+
+        return;
+
     }
 }

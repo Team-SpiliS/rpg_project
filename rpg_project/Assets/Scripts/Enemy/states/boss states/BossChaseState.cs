@@ -12,12 +12,19 @@ public class BossChaseState : AbstractEnemyState
     {
         enemy.animator.CrossFade(enemy.animData.chase, 0.2f);
         _magicCheckTimer = Time.time + _checkInterval;
+        _boss.OnPhaseChanged += HandlePhaseChange;
+        _boss.OnStunTriggered += HandleStunState;
     }
+    public override void Exit()
+    {
+        _boss.OnPhaseChanged -= HandlePhaseChange;
+        _boss.OnStunTriggered -= HandleStunState;
+
+    }
+
 
     public override void LogicUpdate()
     {
-        if (CheckGlobalTransitions()) return; 
-
         if ((enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold) && enemy.myHealth.GetCurrentHealth() > 0)
         {
             enemy.StateMachine.ChangeState(new EnemyFleeState(enemy));
@@ -43,5 +50,23 @@ public class BossChaseState : AbstractEnemyState
         }
 
         if (enemy.agent.isOnNavMesh) enemy.agent.SetDestination(enemy.player.position);
+
+
+    }
+
+    public void HandlePhaseChange()
+    {
+        _boss.StateMachine.ChangeState(new BossTauntState(enemy));
+        return;
+    }
+
+    public void HandleStunState()
+    {
+        Debug.Log('2');
+
+        _boss.StateMachine.ChangeState(new BossStunState(enemy));
+        Debug.Log("state changed");
+
+        return;
     }
 }
