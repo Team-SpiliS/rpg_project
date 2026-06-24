@@ -17,7 +17,7 @@ public class EnemyIdleState : AbstractEnemyState
         {
             if (enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold || enemy.wasHitByPlayer)
             {
-                enemy.StateMachine.ChangeState(new EnemyFleeState(enemy));
+                enemy.StateMachine.ChangeState(enemy.CreateFleeState());
             }
             return; 
         }
@@ -25,7 +25,7 @@ public class EnemyIdleState : AbstractEnemyState
         float dist = Vector3.Distance(enemy.transform.position, enemy.player.position);
         if (dist < enemy.detectionRange || enemy.wasHitByPlayer)
         {
-            enemy.StateMachine.ChangeState(new EnemyChaseState(enemy));
+            enemy.StateMachine.ChangeState(enemy.CreateChaseState());
         }
     }
 }

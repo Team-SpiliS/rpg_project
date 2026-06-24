@@ -1,21 +1,19 @@
 using UnityEngine;
 using System.Collections;
 
-public class BossHeavyAttackState : AbstractEnemyState
+public class BossHeavyAttackState : BossState
 {
-    private BossEnemy _boss;
     private Coroutine _attackRoutine;
 
-    public BossHeavyAttackState(EnemyBase enemy) : base(enemy) { _boss = enemy as BossEnemy; }
+    public BossHeavyAttackState(BossEnemy boss) : base(boss) { }
 
     
 
     public override void Enter()
     {
+        base.Enter();
         if (enemy.agent.isOnNavMesh) enemy.agent.isStopped = true;
         _attackRoutine = enemy.StartCoroutine(AttackRoutine());
-        _boss.OnPhaseChanged += HandlePhaseChange;
-        _boss.OnStunTriggered += HandleStunState;
     }
 
     public override void Exit()
@@ -23,44 +21,30 @@ public class BossHeavyAttackState : AbstractEnemyState
         if (_attackRoutine != null) enemy.StopCoroutine(_attackRoutine);
         if (enemy.agent.isOnNavMesh) enemy.agent.isStopped = false;
         enemy.animator.speed = 1f;
-        _boss.OnPhaseChanged -= HandlePhaseChange;
-        _boss.OnStunTriggered -= HandleStunState;
-
+        base.Exit();
     }
 
     private IEnumerator AttackRoutine()
     {
         enemy.RotateTowardsPlayer();
-        enemy.animator.speed = _boss.isPhaseTwo ? 1.5f : 1f;
+        enemy.animator.speed = boss.isPhaseTwo ? 1.5f : 1f;
         enemy.animator.CrossFade(enemy.animData.heavyAttack, 0.2f);
 
-        float delay = _boss.isPhaseTwo ? 0.7f / 1.5f : 0.7f;
+        float delay = boss.isPhaseTwo ? 0.7f / 1.5f : 0.7f;
         yield return new WaitForSeconds(delay);
-        _boss.PlayMeleeHitEffects();
+        if (boss.IsDead) yield break;
+
+        boss.PlayMeleeHitEffects();
 
         if (Vector3.Distance(enemy.transform.position, enemy.player.position) <= enemy.attackRange + 0.5f)
         {
-            enemy.playerHealth?.TakeDamage(_boss.heavyDamage, DamageType.Physical);
+            enemy.playerHealth?.TakeDamage(boss.heavyDamage, DamageType.Physical);
         }
 
         yield return new WaitForSeconds(1.0f);
-        enemy.StateMachine.ChangeState(new BossChaseState(enemy));
-    }
+        if (boss.IsDead) yield break;
 
-    public void HandlePhaseChange()
-    {
-        _boss.StateMachine.ChangeState(new BossTauntState(enemy));
-        return;
-    }
-
-    public void HandleStunState()
-    {
-        Debug.Log('2');
-
-        _boss.StateMachine.ChangeState(new BossStunState(enemy));
-        Debug.Log("state changed");
-
-        return;
-
+        _attackRoutine = null;
+        enemy.StateMachine.ChangeState(boss.CreateChaseState());
     }
 }

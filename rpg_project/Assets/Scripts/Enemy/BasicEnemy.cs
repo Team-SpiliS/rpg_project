@@ -2,16 +2,15 @@ public class BasicEnemy : EnemyBase
 {
     protected override void Awake()
     {
-        StateMachine = new EnemyStateMachine(this, () => new EnemyAttackState(this));
+        StateMachine = new EnemyStateMachine(this);
         base.Awake();
     }
 
     protected override void Start()
     {
         base.Start();
-        StateMachine.Initialize(new EnemyIdleState(this));
+        StateMachine.Initialize(CreateIdleState());
     }
 
-    public override AbstractEnemyState CreateAttackState()
-        => (AbstractEnemyState)StateMachine.CreateAttackState();
+    public override IEnemyState CreateAttackState() => new EnemyAttackState(this);
 }

@@ -12,10 +12,15 @@ public class RangedEnemy : EnemyBase
     protected override void Start()
     {
         base.Start();
-        StateMachine.Initialize(new EnemyIdleState(this));
+        StateMachine.Initialize(CreateIdleState());
     }
 
-    public override AbstractEnemyState CreateAttackState()
+    public override IEnemyState CreateChaseState()
+    {
+        return new RangedChaseState(this);
+    }
+
+    public override IEnemyState CreateAttackState()
     {
         return new EnemyRangedAttackState(this);
     }

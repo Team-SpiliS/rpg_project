@@ -1,16 +1,16 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class SaveInteractor : ISaveService
 {
     private readonly ISaveRepository _repository;
-    private readonly IScoreService _scoreService;
-    private WorldSnapshot _currentData;
+    private readonly IScoreInteractor _scoreInteractor;
+    private readonly IWorldStateApplier _worldStateApplier;
 
-    public SaveInteractor(ISaveRepository repository, IScoreService scoreService)
+    public SaveInteractor(ISaveRepository repository, IScoreInteractor scoreInteractor, IWorldStateApplier worldStateApplier)
     {
         _repository = repository;
-        _scoreService = scoreService;
+        _scoreInteractor = scoreInteractor;
+        _worldStateApplier = worldStateApplier;
     }
 
     public bool HasSave() => _repository.Exists();
@@ -18,7 +18,7 @@ public class SaveInteractor : ISaveService
     public void SaveGame()
     {
         WorldSnapshot snapshot = new WorldSnapshot();
-        snapshot.score = _scoreService.CurrentScore;
+        snapshot.score = _scoreInteractor.CurrentScore;
         var spawner = Object.FindAnyObjectByType<UniversalSpawner>();
         if (spawner != null)
         {
@@ -40,19 +40,9 @@ public class SaveInteractor : ISaveService
         foreach (var enemy in enemiesOnScene)
         {
             if (enemy.myHealth.GetCurrentHealth() <= 0) continue;
-            string saveId;
-            if (enemy is BossEnemy)
-            {
-                saveId = "Boss";
-            }
-            else
-            {
-
-                saveId = enemy.originFactory != null ? enemy.originFactory.enemyId : "Unknown";
-            }
             snapshot.enemies.Add(new EnemySnapshot
             {
-                id = saveId,
+                id = enemy.SaveId,
                 position = enemy.transform.position,
                 health = enemy.myHealth != null ? enemy.myHealth.GetCurrentHealth() : 100
             });
@@ -60,28 +50,25 @@ public class SaveInteractor : ISaveService
         }
 
         _repository.Save(snapshot);
-        _currentData = snapshot;
     }
 
     public void LoadGame()
     {
-
         if (!_repository.Exists())
         {
             return;
         }
 
-        _currentData = _repository.Load();
+        WorldSnapshot snapshot = _repository.Load();
 
-        if (_currentData != null)
+        if (snapshot != null)
         {
-
-            if (_scoreService != null)
+            if (_scoreInteractor != null)
             {
-                _scoreService.SetScore(_currentData.score);
+                _scoreInteractor.SetScore(snapshot.score);
             }
+
+            _worldStateApplier?.Apply(snapshot);
         }
     }
-
-    public WorldSnapshot GetCurrentData() => _currentData;
 }

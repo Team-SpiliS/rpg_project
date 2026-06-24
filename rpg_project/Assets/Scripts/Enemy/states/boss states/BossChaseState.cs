@@ -1,25 +1,21 @@
 using UnityEngine;
 
-public class BossChaseState : AbstractEnemyState
+public class BossChaseState : BossState
 {
-    private BossEnemy _boss;
     private float _magicCheckTimer;
     private float _checkInterval = 2f;
 
-    public BossChaseState(EnemyBase enemy) : base(enemy) { _boss = enemy as BossEnemy; }
+    public BossChaseState(BossEnemy boss) : base(boss) { }
 
     public override void Enter()
     {
+        base.Enter();
         enemy.animator.CrossFade(enemy.animData.chase, 0.2f);
         _magicCheckTimer = Time.time + _checkInterval;
-        _boss.OnPhaseChanged += HandlePhaseChange;
-        _boss.OnStunTriggered += HandleStunState;
     }
     public override void Exit()
     {
-        _boss.OnPhaseChanged -= HandlePhaseChange;
-        _boss.OnStunTriggered -= HandleStunState;
-
+        base.Exit();
     }
 
 
@@ -27,7 +23,7 @@ public class BossChaseState : AbstractEnemyState
     {
         if ((enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold) && enemy.myHealth.GetCurrentHealth() > 0)
         {
-            enemy.StateMachine.ChangeState(new EnemyFleeState(enemy));
+            enemy.StateMachine.ChangeState(enemy.CreateFleeState());
             return;
         }
 
@@ -38,14 +34,14 @@ public class BossChaseState : AbstractEnemyState
             _magicCheckTimer = Time.time + _checkInterval;
             if (dist < 15f && dist > enemy.attackRange + 2f && Random.value < 0.3f)
             {
-                enemy.StateMachine.ChangeState(new BossRangedState(enemy));
+                enemy.StateMachine.ChangeState(boss.CreateRangedState());
                 return;
             }
         }
 
         if (dist <= enemy.attackRange)
         {
-            enemy.StateMachine.ChangeState(enemy.StateMachine.CreateAttackState());
+            enemy.StateMachine.ChangeState(CreateMeleeAttackState());
             return;
         }
 
@@ -54,19 +50,10 @@ public class BossChaseState : AbstractEnemyState
 
     }
 
-    public void HandlePhaseChange()
+    private IEnemyState CreateMeleeAttackState()
     {
-        _boss.StateMachine.ChangeState(new BossTauntState(enemy));
-        return;
-    }
-
-    public void HandleStunState()
-    {
-        Debug.Log('2');
-
-        _boss.StateMachine.ChangeState(new BossStunState(enemy));
-        Debug.Log("state changed");
-
-        return;
+        return Random.value > 0.6f
+            ? boss.CreateHeavyAttackState()
+            : boss.CreateLightAttackState();
     }
 }

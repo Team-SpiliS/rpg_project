@@ -1,20 +1,21 @@
 using UnityEngine;
 
-public class BossIdleState : AbstractEnemyState
+public class BossIdleState : BossState
 {
-    private BossEnemy _boss;
-
-    public BossIdleState(EnemyBase enemy) : base(enemy)
-    {
-        _boss = enemy as BossEnemy;
-    }
+    public BossIdleState(BossEnemy boss) : base(boss) { }
 
     public override void Enter()
     {
+        base.Enter();
         enemy.animator.CrossFade(enemy.animData.idle, 0.2f);
         if (enemy.agent.isOnNavMesh) enemy.agent.ResetPath();
 
         enemy.wasHitByPlayer = false;
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
     }
 
     public override void LogicUpdate()
@@ -26,14 +27,14 @@ public class BossIdleState : AbstractEnemyState
         {
             if (enemy.wasHitByPlayer)
             {
-                enemy.StateMachine.ChangeState(new BossChaseState(enemy));
+                enemy.StateMachine.ChangeState(boss.CreateChaseState());
             }
         }
         else
         {
             if (enemy.wasHitByPlayer || dist < enemy.detectionRange)
             {
-                enemy.StateMachine.ChangeState(new BossChaseState(enemy));
+                enemy.StateMachine.ChangeState(boss.CreateChaseState());
             }
         }
     }

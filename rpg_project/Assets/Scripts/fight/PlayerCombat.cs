@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
 
-public class PlayerCombat : MonoBehaviour
+public class PlayerCombat : MonoBehaviour, IDamageBlocker
 {
     public int physicalDamage = 25;
     public float attackRange = 1.5f;
@@ -31,15 +31,31 @@ public class PlayerCombat : MonoBehaviour
 
     public float MagicCooldownPercentage => Mathf.Clamp01((nextMagicTime - Time.time) / magicCooldown);
 
-    void Start()
+    void Awake()
     {
         animator = GetComponent<Animator>();
-
         health = GetComponent<HealthComponent>();
+    }
+
+    void OnEnable()
+    {
         if (health != null)
         {
-            health.OnTakeDamage += (amount) => InterruptAttack();
+            health.OnTakeDamage += HandleTakeDamage;
         }
+    }
+
+    void OnDisable()
+    {
+        if (health != null)
+        {
+            health.OnTakeDamage -= HandleTakeDamage;
+        }
+    }
+
+    void HandleTakeDamage(int amount)
+    {
+        InterruptAttack();
     }
 
     void InterruptAttack()
@@ -164,5 +180,10 @@ public class PlayerCombat : MonoBehaviour
 
         float timeRemaining = nextMagicTime - Time.time;
         return timeRemaining / magicCooldown;
+    }
+
+    public bool CanBlockDamage(DamageType type)
+    {
+        return IsBlocking;
     }
 }

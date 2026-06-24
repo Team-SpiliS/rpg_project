@@ -1,35 +1,36 @@
-using System;
-
 public class EnemyStateMachine
 {
     public IEnemyState CurrentState { get; private set; }
     protected EnemyBase enemy;
-    private Func<IEnemyState> _attackFactory;
     public bool IsLocked { get; protected set; }
 
 
     public void LockState() => IsLocked = true;
     public void UnlockState() => IsLocked = false;
-    public EnemyStateMachine(EnemyBase enemy, Func<IEnemyState> attackFactory = null)
+    public EnemyStateMachine(EnemyBase enemy)
     {
         this.enemy = enemy;
-        _attackFactory = attackFactory;
-    }
-
-    public virtual IEnemyState CreateAttackState()
-    {
-        return _attackFactory?.Invoke();
     }
 
     public void Initialize(IEnemyState initialState)
     {
+        UnlockState();
         CurrentState = initialState;
         CurrentState.Enter();
     }
 
     public void ChangeState(IEnemyState newState)
     {
-        if (IsLocked) { return; }
+        if (IsLocked || newState == null || enemy.IsDead) return;
+        CurrentState?.Exit();
+        CurrentState = newState;
+        CurrentState.Enter();
+    }
+
+    public void ForceChangeState(IEnemyState newState)
+    {
+        if (newState == null || enemy.IsDead) return;
+        UnlockState();
         CurrentState?.Exit();
         CurrentState = newState;
         CurrentState.Enter();

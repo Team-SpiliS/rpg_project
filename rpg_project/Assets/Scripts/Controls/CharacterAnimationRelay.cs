@@ -5,17 +5,36 @@ public class CharacterAnimationRelay : MonoBehaviour
     private Animator animator;
     private HealthComponent health;
 
-    void Start()
+    void Awake()
     {
         Transform root = transform.root;
         health = root.GetComponentInChildren<HealthComponent>();
         animator = root.GetComponentInChildren<Animator>();
+    }
 
+    void OnEnable()
+    {
         if (health != null)
         {
-            health.OnTakeDamage += (amount) => PlayHitAnimation();
+            health.OnTakeDamage += HandleTakeDamage;
             health.OnDeath += PlayDeathAnimation;
         }
+    }
+
+    void OnDisable()
+    {
+        if (health != null)
+        {
+            health.OnTakeDamage -= HandleTakeDamage;
+            health.OnDeath -= PlayDeathAnimation;
+        }
+    }
+
+    void HandleTakeDamage(int amount)
+    {
+        if (health != null && health.GetCurrentHealth() <= 0) return;
+
+        PlayHitAnimation();
     }
 
     void PlayHitAnimation()

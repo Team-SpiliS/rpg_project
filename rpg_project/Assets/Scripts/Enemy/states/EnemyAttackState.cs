@@ -40,7 +40,7 @@ public class EnemyAttackState : AbstractEnemyState
         if (enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold &&
         enemy.myHealth.GetCurrentHealth() > 0)
         {
-            enemy.StateMachine.ChangeState(new EnemyFleeState(enemy));
+            enemy.StateMachine.ChangeState(enemy.CreateFleeState());
             return;
         }
 
@@ -50,7 +50,7 @@ public class EnemyAttackState : AbstractEnemyState
 
         if (dist > enemy.attackRange + 0.5f)
         {
-            enemy.StateMachine.ChangeState(new EnemyChaseState(enemy));
+            enemy.StateMachine.ChangeState(enemy.CreateChaseState());
             return;
         }
 

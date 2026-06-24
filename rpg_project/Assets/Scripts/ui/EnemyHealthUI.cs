@@ -1,48 +1,75 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using UnityEngine.UI;
 
 public class EnemyHealthUI : MonoBehaviour
 {
-    [Header("Слайдеры")]
-    public Slider mainSlider;  
-    public Slider drainSlider; 
+    [Header("РЎР»Р°Р№РґРµСЂС‹")]
+    public Slider mainSlider;
+    public Slider drainSlider;
 
-    [Header("Настройки эффекта")]
-    public float drainSpeed = 2f; 
+    [Header("РќР°СЃС‚СЂРѕР№РєРё СЌС„С„РµРєС‚Р°")]
+    public float drainSpeed = 2f;
     private HealthComponent health;
 
-    [Tooltip("Множитель скорости стекания ХП")]
+    [Tooltip("РњРЅРѕР¶РёС‚РµР»СЊ СЃРєРѕСЂРѕСЃС‚Рё СЃС‚РµРєР°РЅРёСЏ РҐРџ")]
     [SerializeField] private float drainMultiplier = 0.5f;
 
-    void Start()
+    void Awake()
     {
         health = GetComponent<HealthComponent>();
+    }
+
+    void OnEnable()
+    {
+        if (health == null)
+        {
+            health = GetComponent<HealthComponent>();
+        }
 
         if (health != null)
         {
             health.OnHealthChanged += UpdateHealthBar;
+            ResetVisuals();
+        }
+    }
 
-            float max = health.GetMaxHealth();
-            float cur = health.GetCurrentHealth();
-
-            mainSlider.maxValue = max;
-            mainSlider.value = cur;
-
-            drainSlider.maxValue = max;
-            drainSlider.value = cur;
+    void OnDisable()
+    {
+        if (health != null)
+        {
+            health.OnHealthChanged -= UpdateHealthBar;
         }
     }
 
     public void ResetVisuals()
     {
-        health = GetComponent<HealthComponent>();
+        if (health == null)
+        {
+            health = GetComponent<HealthComponent>();
+        }
+
+        if (health == null) return;
+
         float max = health.GetMaxHealth();
-        mainSlider.value = max;
-        drainSlider.value = max;
+        float cur = health.GetCurrentHealth();
+
+        if (mainSlider != null)
+        {
+            mainSlider.maxValue = max;
+            mainSlider.value = cur;
+        }
+
+        if (drainSlider != null)
+        {
+            drainSlider.maxValue = max;
+            drainSlider.value = cur;
+        }
     }
 
     void Update()
     {
+        if (mainSlider == null || drainSlider == null) return;
+
         if (drainSlider.value > mainSlider.value)
         {
             drainSlider.value -= drainSpeed * Time.deltaTime * (drainSlider.maxValue * drainMultiplier);
@@ -51,9 +78,15 @@ public class EnemyHealthUI : MonoBehaviour
 
     void UpdateHealthBar(int current, int max)
     {
-        mainSlider.maxValue = max;
-        mainSlider.value = current;
+        if (mainSlider != null)
+        {
+            mainSlider.maxValue = max;
+            mainSlider.value = current;
+        }
 
-        drainSlider.maxValue = max;
+        if (drainSlider != null)
+        {
+            drainSlider.maxValue = max;
+        }
     }
 }

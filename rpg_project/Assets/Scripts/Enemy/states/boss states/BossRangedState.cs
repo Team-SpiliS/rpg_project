@@ -1,27 +1,27 @@
 using UnityEngine;
 using System.Collections;
 
-public class BossRangedState : AbstractEnemyState
+public class BossRangedState : BossState
 {
-    private BossEnemy _boss;
     private Coroutine _shootCoroutine;
 
     private float _initialDelay = 0.6f;
     private float _burstInterval = 0.4f;
     private float _exitDelay = 0.5f;
 
-    public BossRangedState(EnemyBase enemy) : base(enemy) { _boss = enemy as BossEnemy; }
+    public BossRangedState(BossEnemy boss) : base(boss) { }
 
     public override void LogicUpdate()
     {
         if ((enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold) && enemy.myHealth.GetCurrentHealth() > 0)
         {
-            enemy.StateMachine.ChangeState(new EnemyFleeState(enemy));
+            enemy.StateMachine.ChangeState(enemy.CreateFleeState());
         }
     }
 
     public override void Enter()
     {
+        base.Enter();
         if (enemy.agent.isOnNavMesh)
         {
             enemy.agent.isStopped = true;
@@ -35,41 +35,46 @@ public class BossRangedState : AbstractEnemyState
         if (_shootCoroutine != null) enemy.StopCoroutine(_shootCoroutine);
         if (enemy.agent.isOnNavMesh) enemy.agent.isStopped = false;
         enemy.animator.speed = 1f;
+        base.Exit();
     }
 
     private IEnumerator DoubleShootRoutine()
     {
         enemy.RotateTowardsPlayer();
 
-        float speedMult = _boss.isPhaseTwo ? 1.5f : 1f;
+        float speedMult = boss.isPhaseTwo ? 1.5f : 1f;
         enemy.animator.speed = speedMult;
         enemy.animator.CrossFade(enemy.animData.magicCast, 0.1f);
 
         yield return new WaitForSeconds(_initialDelay / speedMult);
+        if (boss.IsDead) yield break;
         SpawnFireball();
         yield return new WaitForSeconds(_burstInterval / speedMult);
+        if (boss.IsDead) yield break;
         SpawnFireball();
         yield return new WaitForSeconds(_exitDelay / speedMult);
+        if (boss.IsDead) yield break;
 
-        enemy.StateMachine.ChangeState(new BossChaseState(enemy));
+        _shootCoroutine = null;
+        enemy.StateMachine.ChangeState(boss.CreateChaseState());
     }
 
     private void SpawnFireball()
     {
-        GameObject prefab = _boss.GetCurrentProjectile();
+        GameObject prefab = boss.GetCurrentProjectile();
 
-        Transform spawnPoint = _boss.CurrentShootPoint;
+        Transform spawnPoint = boss.CurrentShootPoint;
 
         if (prefab != null && spawnPoint != null)
         {
-            GameObject proj = Object.Instantiate(prefab, spawnPoint.position, _boss.transform.rotation);
+            GameObject proj = Object.Instantiate(prefab, spawnPoint.position, boss.transform.rotation);
 
             Vector3 targetPoint = enemy.player.position + Vector3.up * 1.2f;
             proj.transform.LookAt(targetPoint);
 
             if (proj.TryGetComponent(out MagicProjectile magic))
             {
-                magic.Setup(_boss.magicDamage, "Enemy");
+                magic.Setup(boss.magicDamage, "Enemy");
             }
         }
     }

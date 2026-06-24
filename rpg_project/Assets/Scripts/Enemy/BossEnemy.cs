@@ -17,6 +17,10 @@ public class BossEnemy : EnemyBase
     public event System.Action OnPhaseChanged;
     public event System.Action OnStunTriggered;
 
+    public override string SaveId => "Boss";
+    public override bool CanReturnToPool => false;
+    public override bool CountsForKillReward => false;
+    public override int ScoreReward => 100;
 
 
     protected override void Awake()
@@ -30,20 +34,33 @@ public class BossEnemy : EnemyBase
     {
         base.Start();
 
-        if (myHealth != null)
-            myHealth.OnTakeDamage += RegisterDamage;
-
-        StateMachine.Initialize(new BossIdleState(this));
+        StateMachine.Initialize(CreateIdleState());
     }
 
-    private void OnDestroy()
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+
+        if (myHealth != null)
+        {
+            myHealth.OnTakeDamage += RegisterDamage;
+        }
+    }
+
+    protected override void OnDisable()
     {
         if (myHealth != null)
+        {
             myHealth.OnTakeDamage -= RegisterDamage;
+        }
+
+        base.OnDisable();
     }
 
     public void RegisterDamage(int amount)
     {
+        if (myHealth == null || myHealth.GetCurrentHealth() <= 0) return;
+
         wasHitByPlayer = true;
 
         if (Time.time > _lastDamageTime + _stunResetTime)
@@ -60,8 +77,6 @@ public class BossEnemy : EnemyBase
         if (damageTakenRecently >= stunDamageThreshold)
         {
             OnStunTriggered?.Invoke();
-            Debug.Log('1');
-            ResetStunMeter();
             return;
         }
         _lastDamageTime = Time.time;
@@ -70,6 +85,15 @@ public class BossEnemy : EnemyBase
     public void ResetStunMeter()
     {
         damageTakenRecently = 0;
+    }
+
+    public void SetInvulnerable(bool value)
+    {
+        isInvulnerable = value;
+        if (myHealth != null)
+        {
+            myHealth.SetInvulnerable(value);
+        }
     }
 
     protected override void Update()
@@ -103,9 +127,44 @@ public class BossEnemy : EnemyBase
         }
     }
 
-    public override AbstractEnemyState CreateAttackState()
+    public override IEnemyState CreateIdleState()
     {
-        return new EnemyRangedAttackState(this);
+        return new BossIdleState(this);
+    }
+
+    public override IEnemyState CreateChaseState()
+    {
+        return new BossChaseState(this);
+    }
+
+    public override IEnemyState CreateAttackState()
+    {
+        return CreateLightAttackState();
+    }
+
+    public IEnemyState CreateLightAttackState()
+    {
+        return new BossLightAttackState(this);
+    }
+
+    public IEnemyState CreateHeavyAttackState()
+    {
+        return new BossHeavyAttackState(this);
+    }
+
+    public IEnemyState CreateRangedState()
+    {
+        return new BossRangedState(this);
+    }
+
+    public IEnemyState CreateStunState()
+    {
+        return new BossStunState(this);
+    }
+
+    public IEnemyState CreateTauntState()
+    {
+        return new BossTauntState(this);
     }
 
 }

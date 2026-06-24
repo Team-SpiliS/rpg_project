@@ -12,11 +12,9 @@ public abstract class EnemyBase : MonoBehaviour
     public EnemyAnimationData animData;
     public HealthComponent myHealth;
 
-    [Header("Visual References")]
     public GameObject[] visualWeapons;
     public Transform[] weaponShootPoints;
 
-    [Header("Configs")]
     public WeaponConfigSO weaponConfig;
     public ElementConfigSO elementConfig;
 
@@ -28,8 +26,15 @@ public abstract class EnemyBase : MonoBehaviour
 
     public EnemyStateMachine StateMachine { get; protected set; }
 
+    public virtual string SaveId => originFactory != null ? originFactory.enemyId : "Unknown";
+    public virtual bool CanReturnToPool => true;
+    public virtual bool CountsForKillReward => true;
+    public virtual int ScoreReward => 10;
+
     [HideInInspector] public bool wasHitByPlayer = false;
     protected bool isDead = false;
+    private bool _healthEventsSubscribed;
+    public bool IsDead => isDead;
 
     protected virtual void Awake()
     {
@@ -50,12 +55,16 @@ public abstract class EnemyBase : MonoBehaviour
     protected virtual void Start()
     {
         gameSettings = ServiceLocator.Get<IGameSettings>();
+    }
 
-        if (myHealth != null)
-        {
-            myHealth.OnDeath += HandleDeath;
-            myHealth.OnTakeDamage += (amount) => wasHitByPlayer = true;
-        }
+    protected virtual void OnEnable()
+    {
+        SubscribeHealthEvents();
+    }
+
+    protected virtual void OnDisable()
+    {
+        UnsubscribeHealthEvents();
     }
 
     protected virtual void Update()
@@ -76,13 +85,46 @@ public abstract class EnemyBase : MonoBehaviour
         if (dir != Vector3.zero) transform.rotation = Quaternion.LookRotation(dir);
     }
 
-    public abstract AbstractEnemyState CreateAttackState();
+    public virtual IEnemyState CreateIdleState() => new EnemyIdleState(this);
+
+    public virtual IEnemyState CreateChaseState() => new EnemyChaseState(this);
+
+    public virtual IEnemyState CreateFleeState() => new EnemyFleeState(this);
+
+    public abstract IEnemyState CreateAttackState();
 
     private void HandleDeath()
     {
+        if (isDead) return;
+
         isDead = true;
+        StateMachine?.CurrentState?.Exit();
+        StateMachine?.LockState();
         if (agent != null) agent.enabled = false;
         this.enabled = false;
+    }
+
+    private void HandleTakeDamage(int amount)
+    {
+        wasHitByPlayer = true;
+    }
+
+    private void SubscribeHealthEvents()
+    {
+        if (_healthEventsSubscribed || myHealth == null) return;
+
+        myHealth.OnDeath += HandleDeath;
+        myHealth.OnTakeDamage += HandleTakeDamage;
+        _healthEventsSubscribed = true;
+    }
+
+    private void UnsubscribeHealthEvents()
+    {
+        if (!_healthEventsSubscribed || myHealth == null) return;
+
+        myHealth.OnDeath -= HandleDeath;
+        myHealth.OnTakeDamage -= HandleTakeDamage;
+        _healthEventsSubscribed = false;
     }
 
 
@@ -104,7 +146,9 @@ public abstract class EnemyBase : MonoBehaviour
         if (agent != null) agent.enabled = true;
         this.enabled = true;
 
+        myHealth.SetInvulnerable(false);
         myHealth.LoadHealth(myHealth.GetMaxHealth());
+        StateMachine.UnlockState();
 
         var healthUI = GetComponentInChildren<EnemyHealthUI>();
         if (healthUI != null)
@@ -112,7 +156,7 @@ public abstract class EnemyBase : MonoBehaviour
             healthUI.ResetVisuals();
         }
 
-        StateMachine.ChangeState(new EnemyIdleState(this));
+        StateMachine.ChangeState(CreateIdleState());
     }
 
     public Transform CurrentShootPoint

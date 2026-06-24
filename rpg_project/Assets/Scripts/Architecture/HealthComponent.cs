@@ -5,6 +5,7 @@ public class HealthComponent : MonoBehaviour, IDamageable
 {
     [SerializeField] private int maxHealth = 100;
     private int currentHealth;
+    private bool isInvulnerable;
 
     public event Action<int, int> OnHealthChanged;
     public event Action<int> OnTakeDamage;
@@ -20,15 +21,13 @@ public class HealthComponent : MonoBehaviour, IDamageable
     {
         if (currentHealth <= 0) return;
 
-        BossEnemy boss = transform.root.GetComponentInChildren<BossEnemy>();
-
-        if (boss != null && boss.isInvulnerable)
+        if (isInvulnerable)
         {
             return;
         }
 
-        PlayerCombat playerCombat = GetComponent<PlayerCombat>();
-        if (playerCombat != null && playerCombat.IsBlocking)
+        IDamageBlocker damageBlocker = GetComponent<IDamageBlocker>();
+        if (damageBlocker != null && damageBlocker.CanBlockDamage(type))
         {
             OnBlockHit?.Invoke(); 
             return;
@@ -54,6 +53,12 @@ public class HealthComponent : MonoBehaviour, IDamageable
 
     public int GetCurrentHealth() => currentHealth;
     public int GetMaxHealth() => maxHealth;
+    public bool IsInvulnerable => isInvulnerable;
+
+    public void SetInvulnerable(bool value)
+    {
+        isInvulnerable = value;
+    }
 
     public void LoadHealth(int health)
     {

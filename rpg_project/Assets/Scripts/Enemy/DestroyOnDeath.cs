@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class DestroyOnDeath : MonoBehaviour
 {
-    [Tooltip("Через сколько секунд удалить объект после смерти")]
     public float delay = 5f;
 
     void Start()

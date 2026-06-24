@@ -15,13 +15,23 @@ public class EnemyFactorySO : ScriptableObject
 
     public EnemyBase CreateInstance(Vector3 position)
     {
+        if (prefab == null)
+        {
+            return null;
+        }
+
+        if (weapon == null || weapon.Length == 0)
+        {
+            return null;
+        }
+
         GameObject instance = Instantiate(prefab, position, Quaternion.identity);
         EnemyBase enemy = instance.GetComponent<EnemyBase>();
 
         if (enemy != null)
         {
             enemy.weaponConfig = weapon[Random.Range(0, weapon.Length)];
-            if (enemy.weaponConfig != null && element.Length > 0)
+            if (enemy.weaponConfig != null && element != null && element.Length > 0)
             {
                 enemy.elementConfig = element[Random.Range(0, element.Length)];
             }

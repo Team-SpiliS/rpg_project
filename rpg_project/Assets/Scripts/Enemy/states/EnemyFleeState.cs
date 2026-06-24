@@ -26,7 +26,7 @@ public class EnemyFleeState : AbstractEnemyState
         if (Vector3.Distance(enemy.transform.position, enemy.player.position) > 20f)
         {
             enemy.wasHitByPlayer = false;
-            enemy.StateMachine.ChangeState(new EnemyIdleState(enemy));
+            enemy.StateMachine.ChangeState(enemy.CreateIdleState());
         }
     }
 

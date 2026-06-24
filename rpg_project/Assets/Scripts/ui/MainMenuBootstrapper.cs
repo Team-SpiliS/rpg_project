@@ -15,4 +15,9 @@ public class MainMenuBootstrapper : MonoBehaviour
 
         _controller = new MainMenuController(model, _mainMenuView, audioService, settings);
     }
+
+    private void OnDestroy()
+    {
+        _controller?.Dispose();
+    }
 }

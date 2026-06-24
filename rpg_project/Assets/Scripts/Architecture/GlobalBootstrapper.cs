@@ -4,10 +4,11 @@ using UnityEngine.SceneManagement;
 [DefaultExecutionOrder(-100)]
 public class GlobalBootstrapper : MonoBehaviour
 {
-    [Header("Õ‡ÒÚÓÈÍË ¿Û‰ËÓ")]
+    [Header("–ù–∞—Å—Ç—Ä–æ–π–∫–∏ –ê—É–¥–∏–æ")]
     [SerializeField] private AudioSource mainMusicSource;
     [SerializeField] private string nextSceneName = "MainMenu";
     [SerializeField] private EnemyKilledEventSO _enemyDeathEvent;
+    private ScoreInteractor _scoreInteractor;
 
     private void Awake()
     {
@@ -32,18 +33,23 @@ public class GlobalBootstrapper : MonoBehaviour
     {
         ServiceLocator.Clear();
 
-        var scoreInteractor = new ScoreService(_enemyDeathEvent);
-        ServiceLocator.Register<IScoreService>(scoreInteractor);
+        _scoreInteractor = new ScoreInteractor(_enemyDeathEvent);
+        ServiceLocator.Register<IScoreInteractor>(_scoreInteractor);
 
         IAudioService audioService = new UnityAudioService(mainMusicSource);
         ServiceLocator.Register<IAudioService>(audioService);
 
         ISaveRepository repository = new JsonSaveRepository();
-        SaveInteractor saveInteractor = new SaveInteractor(repository, scoreInteractor);
+        IWorldStateApplier worldStateApplier = new WorldStateApplier();
+        SaveInteractor saveInteractor = new SaveInteractor(repository, _scoreInteractor, worldStateApplier);
         ServiceLocator.Register<ISaveService>(saveInteractor);
 
         ServiceLocator.Register<IGameSettings>(new GameSettingsService());
 
         audioService.PlayMusic();
+    }
+    private void OnDestroy()
+    {
+        _scoreInteractor?.Dispose();
     }
 }

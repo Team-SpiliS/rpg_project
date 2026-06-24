@@ -15,10 +15,22 @@ public class UIController : MonoBehaviour
 
     private HealthComponent playerHealth;
     private PlayerCombat playerCombat;
+    private bool _isSubscribed;
 
-    void Start()
+    void OnEnable()
     {
         if (gameOverPanel) gameOverPanel.SetActive(false);
+        BindPlayer();
+    }
+
+    void OnDisable()
+    {
+        UnbindPlayer();
+    }
+
+    private void BindPlayer()
+    {
+        if (_isSubscribed) return;
 
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
@@ -32,8 +44,18 @@ public class UIController : MonoBehaviour
                 playerHealth.OnDeath += ShowGameOverScreen;
 
                 UpdateHealthUI(playerHealth.GetCurrentHealth(), playerHealth.GetMaxHealth());
+                _isSubscribed = true;
             }
         }
+    }
+
+    private void UnbindPlayer()
+    {
+        if (!_isSubscribed || playerHealth == null) return;
+
+        playerHealth.OnHealthChanged -= UpdateHealthUI;
+        playerHealth.OnDeath -= ShowGameOverScreen;
+        _isSubscribed = false;
     }
 
     void Update()

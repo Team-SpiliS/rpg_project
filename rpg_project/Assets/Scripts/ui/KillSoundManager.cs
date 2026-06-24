@@ -22,7 +22,7 @@ public class KillSoundManager : MonoBehaviour
 
     private void OnEnemyKilled(EnemyBase enemy)
     {
-        if (enemy is BossEnemy) return;
+        if (!enemy.CountsForKillReward) return;
 
         _killCounter++;
 

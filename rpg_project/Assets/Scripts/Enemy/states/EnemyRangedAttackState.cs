@@ -9,12 +9,8 @@ public class EnemyRangedAttackState : AbstractEnemyState
     private float _nextFireTime = 0f;
     private Coroutine _attackCoroutine;
     private bool _isAttacking = false;
-    private RangedEnemy _mage;
 
-    public EnemyRangedAttackState(EnemyBase enemy) : base(enemy)
-    {
-        _mage = enemy as RangedEnemy;
-    }
+    public EnemyRangedAttackState(RangedEnemy enemy) : base(enemy) { }
 
     public override void Enter()
     {
@@ -41,7 +37,7 @@ public class EnemyRangedAttackState : AbstractEnemyState
     {
         if (enemy.myHealth.GetCurrentHealth() < enemy.fleeHealthThreshold)
         {
-            enemy.StateMachine.ChangeState(new EnemyFleeState(enemy));
+            enemy.StateMachine.ChangeState(enemy.CreateFleeState());
             return;
         }
 
@@ -51,7 +47,7 @@ public class EnemyRangedAttackState : AbstractEnemyState
 
         if (dist < enemy.weaponConfig.retreatDistance || dist > enemy.attackRange + 0.5f)
         {
-            enemy.StateMachine.ChangeState(new EnemyChaseState(enemy));
+            enemy.StateMachine.ChangeState(enemy.CreateChaseState());
             return;
         }
 

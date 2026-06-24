@@ -32,10 +32,10 @@ public class MainMenuController
 
     private void HandlePlayClicked()
     {
-        var scoreService = ServiceLocator.Get<IScoreService>();
-        if (scoreService != null)
+        var scoreInteractor = ServiceLocator.Get<IScoreInteractor>();
+        if (scoreInteractor != null)
         {
-            scoreService.SetScore(0); 
+            scoreInteractor.SetScore(0);
         }
         SceneManager.LoadScene("Level_1"); 
     }
@@ -50,5 +50,13 @@ public class MainMenuController
     {
         _model.IsPeacefulMode = isOn;
         _gameSettings.IsPeacefulMode = isOn;
+    }
+
+    public void Dispose()
+    {
+        _view.OnPlayClicked -= HandlePlayClicked;
+        _view.OnVolumeSliderChanged -= HandleVolumeChanged;
+        _view.OnPeacefulToggleChanged -= HandlePeacefulChanged;
+        _model.OnVolumeChanged -= _view.UpdateVolumeSlider;
     }
 }

@@ -15,9 +15,7 @@ public class UniversalSpawner : MonoBehaviour
     public int deathCount { get; set; } = 0;
     private bool _bossIsActive = false;
 
-    public GameObject bossPrefab;
-    public WeaponConfigSO[] bossWeapons;
-    public ElementConfigSO[] bossElements;
+    public BossFactorySO bossFactory;
     public EnemyKilledEventSO enemyKilledEvent;
 
     private BossEnemy _currentBoss;
@@ -41,7 +39,7 @@ public class UniversalSpawner : MonoBehaviour
     {
         EnemyBase enemy = factory.CreateInstance(transform.position);
         enemy.gameObject.SetActive(false);
-        enemy.myHealth.OnDeath += () => HandleEnemyDeath(enemy, factory.prefab);
+        InitializeSpawnHandle(enemy, factory.prefab);
         _pools[factory.prefab].Enqueue(enemy);
     }
 
@@ -66,7 +64,7 @@ public class UniversalSpawner : MonoBehaviour
         else
         {
             enemy = factory.CreateInstance(position);
-            enemy.myHealth.OnDeath += () => HandleEnemyDeath(enemy, targetPrefab);
+            InitializeSpawnHandle(enemy, targetPrefab);
         }
 
         enemy.transform.position = position;
@@ -79,7 +77,7 @@ public class UniversalSpawner : MonoBehaviour
         _currentActiveCount++;
     }
 
-    private void HandleEnemyDeath(EnemyBase enemy, GameObject prefabKey)
+    public void NotifyEnemyDeath(EnemyBase enemy, GameObject prefabKey)
     {
         if (enemyKilledEvent != null) enemyKilledEvent.RaiseEvent(enemy);
 
@@ -95,6 +93,18 @@ public class UniversalSpawner : MonoBehaviour
             }
         }
         StartCoroutine(RespawnRoutine(enemy, prefabKey));
+    }
+
+    private void InitializeSpawnHandle(EnemyBase enemy, GameObject prefabKey)
+    {
+        if (enemy == null) return;
+
+        if (!enemy.TryGetComponent(out EnemySpawnHandle handle))
+        {
+            handle = enemy.gameObject.AddComponent<EnemySpawnHandle>();
+        }
+
+        handle.Initialize(this, enemy, prefabKey);
     }
 
     private IEnumerator RespawnRoutine(EnemyBase enemy, GameObject prefabKey)
@@ -117,7 +127,7 @@ public class UniversalSpawner : MonoBehaviour
         var activeEnemies = Object.FindObjectsByType<EnemyBase>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         foreach (var enemy in activeEnemies)
         {
-            if (enemy is BossEnemy)
+            if (!enemy.CanReturnToPool)
             {
                 Destroy(enemy.gameObject); 
             }
@@ -136,7 +146,7 @@ public class UniversalSpawner : MonoBehaviour
 
         foreach (var snap in savedEnemies)
         {
-            if (snap.id == "Boss")
+            if (bossFactory != null && snap.id == bossFactory.BossId)
             {
                 SpawnBoss(snap.position, snap.health);
             }
@@ -168,24 +178,25 @@ public class UniversalSpawner : MonoBehaviour
 
     private void SpawnBoss(Vector3 position, int health = -1)
     {
-        _bossIsActive = true;
-        GameObject bossObj = Instantiate(bossPrefab, position, Quaternion.identity);
-        BossEnemy boss = bossObj.GetComponent<BossEnemy>();
-
-        if (boss != null)
+        if (bossFactory == null)
         {
-            boss.weaponConfig = bossWeapons[Random.Range(0, bossWeapons.Length)];
-            boss.elementConfig = bossElements[Random.Range(0, bossElements.Length)];
-            boss.ApplyVisuals();
+            return;
+        }
+
+        BossEnemy boss = bossFactory.Create(position);
+        if (boss == null) return;
+
+        _bossIsActive = true;
+        _currentBoss = boss;
+
+        if (boss.myHealth != null)
+        {
             boss.myHealth.OnDeath += HandleBossDeath;
 
-            boss.name = "BOSS_INSTANCE";
-
-            if (health != -1 && boss.myHealth != null)
+            if (health != -1)
             {
                 boss.myHealth.LoadHealth(health);
             }
-            _currentBoss = boss;
         }
     }
 
