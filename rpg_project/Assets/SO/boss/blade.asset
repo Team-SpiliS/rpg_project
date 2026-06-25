@@ -15,5 +15,5 @@ MonoBehaviour:
   weaponName: blade
   baseDamage: 15
   weaponVisualIndex: 0
-  projectilePrefab: {fileID: 6343466378337208857, guid: 8a25289af96420f49a02f80d6070d9c3, type: 3}
+  projectilePrefab: {fileID: 0}
   retreatDistance: 5
