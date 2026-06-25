@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2389cf849a6a15140b195a138d6b28c0, type: 3}
+  m_Name: kingsword factory
+  m_EditorClassIdentifier: 
+  enemyId: kingsword
+  prefab: {fileID: 5490360720348356523, guid: cbb3afc1e05e4e74891e523ff04dbcee, type: 3}
+  weapon:
+  - {fileID: 11400000, guid: 1cd175c27b4048b48af454f9b6a19624, type: 2}
+  - {fileID: 11400000, guid: 34043aa59c75b9d47a0ce69c2b955e41, type: 2}
+  element: []
