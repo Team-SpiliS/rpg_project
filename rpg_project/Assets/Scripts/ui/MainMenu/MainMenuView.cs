@@ -1,0 +1,55 @@
+using System;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class MainMenuView : MonoBehaviour
+{
+    [SerializeField] private GameObject _mainMenuPanel;
+    [SerializeField] private GameObject _settingsPanel;
+
+    [SerializeField] private Slider _volumeSlider;
+    [SerializeField] private Toggle _peacefulToggle;
+
+    [SerializeField] private Button _playButton;
+    [SerializeField] private Button _settingsButton;
+    [SerializeField] private Button _closeSettingsButton;
+
+    public event Action OnPlayClicked;
+    public event Action<float> OnVolumeSliderChanged;
+    public event Action<bool> OnPeacefulToggleChanged;
+
+    private void Awake()
+    {
+        _playButton.onClick.AddListener(() => OnPlayClicked?.Invoke());
+
+        _settingsButton.onClick.AddListener(ShowSettings);
+        _closeSettingsButton.onClick.AddListener(ShowMainMenu);
+        _peacefulToggle.onValueChanged.AddListener(val => OnPeacefulToggleChanged?.Invoke(val));
+
+        _volumeSlider.onValueChanged.AddListener(val => OnVolumeSliderChanged?.Invoke(val));
+
+        ShowMainMenu(); 
+    }
+
+    public void ShowMainMenu()
+    {
+        _mainMenuPanel.SetActive(true);
+        _settingsPanel.SetActive(false);
+    }
+
+    public void UpdatePeacefulToggle(bool isOn)
+    {
+        _peacefulToggle.SetIsOnWithoutNotify(isOn);
+    }
+
+    public void ShowSettings()
+    {
+        _mainMenuPanel.SetActive(false);
+        _settingsPanel.SetActive(true);
+    }
+
+    public void UpdateVolumeSlider(float volume)
+    {
+        _volumeSlider.SetValueWithoutNotify(volume);
+    }
+}
