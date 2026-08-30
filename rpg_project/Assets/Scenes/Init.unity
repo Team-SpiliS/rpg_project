@@ -272,6 +272,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainMusicSource: {fileID: 426311410}
   nextSceneName: MainMenu
+  _enemyDeathEvent: {fileID: 11400000, guid: 3162810cced68e448b6b4efb1ffe4b03, type: 2}
 --- !u!4 &426311409
 Transform:
   m_ObjectHideFlags: 0
